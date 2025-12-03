@@ -1,0 +1,13 @@
+L4_factor,N_cases,P_Staffing,P_MEL,P_Manuals
+Chart_Or_Publication,13,0.0,0.0,0.0
+Company_Policy,59,0.1356,0.0169,0.0678
+Logbook_Entry,2,0.0,0.0,0.0
+Procedure,467,0.0321,0.0214,0.0321
+Incorrect___Not_Installed___Unavailable_Part,6,0.0,0.1667,0.0
+Human_Factors,1045,0.0211,0.0096,0.0134
+Software_and_Automation,14,0.0,0.0,0.0
+Aircraft,804,0.01,0.0187,0.0137
+Airport,107,0.0187,0.0,0.0
+Airspace_Structure,3,0.0,0.0,0.0
+ATC_Equipment___Nav_Facility___Buildings,5,0.0,0.0,0.0
+Equipment___Tooling,51,0.0588,0.0,0.0392

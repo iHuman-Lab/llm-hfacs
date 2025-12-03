@@ -1,0 +1,138 @@
+[
+    {
+        "from": "Human Factors:Communication Breakdown",
+        "to": "Anomaly:Deviation / Discrepancy - Procedural Published Material / Policy"
+    },
+    {
+        "from": "Human Factors:Communication Breakdown",
+        "to": "Anomaly:Ground Event / Encounter Vehicle"
+    },
+    {
+        "from": "Human Factors:Communication Breakdown",
+        "to": "Anomaly:Ground Event / Encounter Ground Equipment Issue"
+    },
+    {
+        "from": "Human Factors:Communication Breakdown",
+        "to": "Anomaly:Conflict Ground Conflict, Critical"
+    },
+    {
+        "from": "Human Factors:Fatigue",
+        "to": "Anomaly:Deviation / Discrepancy - Procedural MEL / CDL"
+    },
+    {
+        "from": "Human Factors:Human-Machine Interface",
+        "to": "Anomaly:Deviation / Discrepancy - Procedural FAR"
+    },
+    {
+        "from": "Human Factors:Situational Awareness",
+        "to": "Anomaly:Ground Excursion Runway"
+    },
+    {
+        "from": "Human Factors:Situational Awareness",
+        "to": "Anomaly:Ground Event / Encounter Aircraft"
+    },
+    {
+        "from": "Human Factors:Situational Awareness",
+        "to": "Anomaly:Ground Event / Encounter Loss Of Aircraft Control"
+    },
+    {
+        "from": "Human Factors:Troubleshooting",
+        "to": "Anomaly:Aircraft Equipment Problem Critical"
+    },
+    {
+        "from": "Human Factors:Troubleshooting",
+        "to": "Anomaly:Deviation / Discrepancy - Procedural Clearance"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Ground Event / Encounter Loss Of Aircraft Control"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Inflight Event / Encounter Weather / Turbulence"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Ground Excursion Taxiway"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Ground Event / Encounter Ground Strike - Aircraft"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Inflight Event / Encounter Loss Of Aircraft Control"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Conflict Ground Conflict, Critical"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Deviation - Altitude Excursion From Assigned Altitude"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "to": "Anomaly:Inflight Event / Encounter Unstabilized Approach"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Bird / Animal",
+        "to": "Anomaly:Deviation / Discrepancy - Procedural Published Material / Policy"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Aircraft Equipment Problem Critical"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Excursion Runway"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Loss Of Aircraft Control"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Gear Up Landing"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Aircraft"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Ground Strike - Aircraft"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Flight Deck / Cabin / Aircraft Event Smoke / Fire / Fumes / Odor"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Vehicle"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Event / Encounter Other / Unknown"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Excursion Taxiway"
+    },
+    {
+        "from": "Anomaly:Ground Event / Encounter Object",
+        "to": "Anomaly:Ground Incursion Ramp"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Object",
+        "to": "Anomaly:Inflight Event / Encounter CFTT / CFIT"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Object",
+        "to": "Anomaly:Conflict NMAC"
+    },
+    {
+        "from": "Anomaly:Inflight Event / Encounter Fly Away (UAS)",
+        "to": "Anomaly:Inflight Event / Encounter Loss Of Aircraft Control"
+    }
+]
