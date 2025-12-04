@@ -24,12 +24,14 @@ L3_names = df_32["L3_factor"].tolist()
 # L2 names: row labels in L2->L1 module
 L2_names = df_21["L2_factor"].tolist()
 
+# L4 names: row labels in L4->L3 module
+L4_names = df_43["L4_factor"].tolist()
+
 # L1 names: columns in L2->L1 module (strip prefix "P_")
 L1_prob_cols = [c for c in df_21.columns if c.startswith("P_")]
 L1_names = [c.replace("P_", "") for c in L1_prob_cols]
 
-# L4 names: row labels in L4->L3 module
-L4_names = df_43["L4_factor"].tolist()
+
 
 # ============================================
 # 3) BUILD PROBABILITY MATRICES A, B, C
