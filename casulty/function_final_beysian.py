@@ -62,8 +62,46 @@ def compute_L3_to_L2(input_path):
         "Contributing Factors:Manuals",
     ]
 
+    # Add FULL L2 LIST here (same as compute_L2_to_L1)
+    L2_raw = [
+        "Contributing Factors:Weather",
+        "Contributing Factors:Environment - Non Weather Related",
+        "Anomaly:Ground Event / Encounter Weather / Turbulence",
+        "Anomaly:Inflight Event / Encounter Weather / Turbulence",
+        "Anomaly:Inflight Event / Encounter Wake Vortex Encounter",
+        "Anomaly:Inflight Event / Encounter Bird / Animal",
+        "Anomaly:Ground Event / Encounter Person / Animal / Bird",
+        "Anomaly:Ground Event / Encounter FOD",
+        "Anomaly:Ground Event / Encounter Object",
+        "Anomaly:Inflight Event / Encounter Object",
+        "Anomaly:Ground Event / Encounter Jet Blast",
+        "Anomaly:Ground Excursion Ramp",
+        "Anomaly:Ground Excursion Runway",
+        "Anomaly:Ground Excursion Taxiway",
+        "Anomaly:Ground Incursion Ramp",
+        "Anomaly:Ground Incursion Runway",
+        "Anomaly:Ground Incursion Taxiway",
+        "Anomaly:ATC Issue All Types",
+        "Anomaly:Aircraft Equipment Problem Critical",
+        "Anomaly:Aircraft Equipment Problem Less Severe",
+        "Anomaly:Ground Event / Encounter Ground Equipment Issue",
+        "Contributing Factors:ATC Equipment / Nav Facility / Buildings",
+        "Contributing Factors:Equipment / Tooling",
+        "Contributing Factors:Software and Automation",
+        "Human Factors:Communication Breakdown",
+        "Human Factors:Confusion",
+        "Human Factors:Distraction",
+        "Human Factors:Situational Awareness",
+        "Human Factors:Time Pressure",
+        "Human Factors:Workload",
+        "Human Factors:Troubleshooting",
+        "Human Factors:Training / Qualification",
+        "Human Factors:Human-Machine Interface",
+        "Human Factors:Other / Unknown",
+        "Human Factors:Fatigue",
+        "Human Factors:Physiological - Other",
+    ]
 
-    _, L2_raw = None, compute_L2_to_L1.__code__.co_consts  
     df = pd.read_excel(input_path, usecols=L3_raw + L2_raw, engine="openpyxl").fillna(0)
 
     L3 = {clean(c): c for c in L3_raw}
