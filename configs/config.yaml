@@ -9,6 +9,30 @@ level_3: [
         "Contributing Factors:Manuals",
     ]
 
+factors_mapping:
+  level_4:
+    Anamoly Deviations: ["Anomaly:Deviation - Altitude Excursion From Assigned Altitude",
+        "Anomaly:Deviation - Altitude Overshoot",
+        "Anomaly:Deviation - Altitude Undershoot",
+        "Anomaly:Deviation - Speed All Types",
+        "Anomaly:Deviation - Track / Heading All Types",
+        "Anomaly:Deviation / Discrepancy - Procedural Clearance",
+        "Anomaly:Deviation / Discrepancy - Procedural FAR",
+        "Anomaly:Deviation / Discrepancy - Procedural Hazardous Material Violation",
+        "Anomaly:Deviation / Discrepancy - Procedural Landing Without Clearance",
+        "Anomaly:Deviation / Discrepancy - Procedural MEL / CDL",
+        "Anomaly:Deviation / Discrepancy - Procedural Other / Unknown",
+        "Anomaly:Deviation / Discrepancy - Procedural Published Material / Policy",
+        "Anomaly:Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)",
+        "Anomaly:Deviation / Discrepancy - Procedural Weight And Balance"]
+    Anamoly Ground: [Anomaly:Ground Event / Encounter Jet Blast",
+        "Anomaly:Ground Excursion Ramp",
+        "Anomaly:Ground Excursion Runway",
+        "Anomaly:Ground Excursion Taxiway",
+        "Anomaly:Ground Incursion Ramp",
+        "Anomaly:Ground Incursion Runway",
+        "Anomaly:Ground Incursion Taxiway"]
+    
 level_4: [
         "Contributing Factors:Chart Or Publication",
         "Contributing Factors:Company Policy",
