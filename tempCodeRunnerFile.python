@@ -1,0 +1,9 @@
+
+
+import pandas as pd
+
+df1 = pd.read_csv("./data/processed/ASRS_all_factors_extracted.csv")
+df2 = pd.read_csv("./data/processed/ASRS_all_factors_extracted_with_subcats.csv")
+
+print("Extracted.csv HFACS columns:", [c for c in df1.columns if c.startswith("Level_")])
+print("With_subcats.csv HFACS columns:", [c for c in df2.columns if c.startswith("Level_")])

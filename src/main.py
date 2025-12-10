@@ -6,7 +6,7 @@ from models.prediction import compute_full_chain
 from utils import skip_run
 
 # The configuration file
-with open("./configs/config.yaml") as f:
+with open("./configs/config_subcategories.yaml") as f:
     config = yaml.load(f, Loader=yaml.SafeLoader)
 
 
