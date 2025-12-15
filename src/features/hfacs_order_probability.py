@@ -133,11 +133,24 @@ def compute_full_hfacs_chain(
 
         df = pd.read_csv(file)
 
+        # ---- find the parent label column automatically ----
+        parent_cols = [c for c in df.columns if c.endswith("_category")]
+        if len(parent_cols) != 1:
+            raise ValueError(f"Ambiguous or missing parent category column in {file}")
+
+        parent_col = parent_cols[0]
+
+        # ---- select correct parent row ----
+        row = df[df[parent_col] == parent]
+        if row.empty:
+            raise ValueError(f"No probability row found for parent '{parent}' in {file}")
+
+        # ---- extract probability ----
         col = f"P_{child}"
         if col not in df.columns:
             raise ValueError(f"Missing column {col} in {file}")
 
-        probs.append(df[col].iloc[0])
+        probs.append(row[col].iloc[0])
 
     final_prob = reduce(lambda x, y: x * y, probs)
 
