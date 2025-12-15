@@ -13,19 +13,12 @@ from data.dataset import (
     create_hfacs_categories,
     save_outputs,
 )
-from features.conditional_prob import (
-    conditional_probabilities,
-    compute_all_hfacs_probabilities,
-)
 
 
-from features.hfacs_order_probability import (
-    compute_hfacs_ordered_probabilities,
-    compute_full_hfacs_chain,
-)
+from features.hfacs_order_probability import compute_all_full_hfacs_chains, compute_hfacs_ordered_probabilities, conditional_probabilities_hfacs, HFACS_ORDER
 
 # HFACS chain function
-from models.prediction import compute_full_chain
+#from models.prediction import compute_full_chain
 
 
 # ============================================================
@@ -101,55 +94,37 @@ with skip_run("run", "save_outputs") as check:
 
 
 # ============================================================
-# 7. COMPUTE ALL HFACS CONDITIONAL PROBABILITIES
+# 7. COMPUTE HFACS-ORDERED CONDITIONAL PROBABILITIES
 # ============================================================
 
-with skip_run("run", "hfacs_probabilities") as check:
+with skip_run("run", "hfacs_ordered_probabilities") as check:
     if check():
-        print("[INFO] Computing HFACS conditional probabilities...")
-        compute_all_hfacs_probabilities(
+        print("[INFO] Computing HFACS-ordered conditional probabilities...")
+        compute_hfacs_ordered_probabilities(
             df,
-            hfacs_map,
+            hfacs_order=HFACS_ORDER,
             output_dir="./data/processed",
         )
-        print("[INFO] HFACS probability tables saved.")
+        print("[INFO] HFACS ordered probability tables saved.")
 
 
 # ============================================================
-# 8. COMPUTE HFACS FULL CHAIN (USING SAVED PROBABILITIES)
+# 8. COMPUTE ALL HFACS FULL CHAINS (L4 → L1)
 # ============================================================
 
-with skip_run("run", "hfacs_full_chain") as check:
+with skip_run("run", "hfacs_full_chains") as check:
     if check():
-        print("[INFO] Computing HFACS chained probabilities...")
+        print("[INFO] Computing ALL HFACS full chains (Error + Violation)...")
 
-        # Example chain — YOU choose the order
-        chain = [
-            "Organizational_Process",
-            "Inadequate_Supervision",
-            "Error",
-        ]
-
-        chain_df = compute_full_chain(
-            chain=chain,
+        all_chains_df = compute_all_full_hfacs_chains(
+            hfacs_order=HFACS_ORDER,
             processed_dir="./data/processed",
         )
 
-        chain_df.to_csv(
-            "./data/processed/HFACS_chain_Organizational_to_Error.csv"
+        all_chains_df.to_csv(
+            "./data/processed/HFACS_all_L4_to_L1_chains.csv",
+            index=False,
         )
 
-        print("[INFO] HFACS chain result:")
-        print(chain_df)
-
-
-
-with skip_run("run", "hfacs_probabilities") as check:
-    if check():
-        print("[INFO] Computing HFACS conditional probabilities...")
-        compute_hfacs_ordered_probabilities(
-            df,
-            output_dir="./data/processed",
-        )
-        print("[INFO] HFACS probability tables saved.")
-
+        print("[INFO] HFACS full-chain computation complete.")
+        print(all_chains_df.head())

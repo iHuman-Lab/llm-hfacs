@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from functools import reduce
+from itertools import product
 
 # ============================================================
 # HFACS ORDER (THEORY-CONSTRAINED)
@@ -112,74 +113,34 @@ def compute_hfacs_ordered_probabilities(
 # COMPUTE A FULL HFACS CHAIN (SCALAR, VALID)
 # ============================================================
 
-def compute_full_hfacs_chain(
-    chain,
+def compute_all_full_hfacs_chains(
+    hfacs_order,
     processed_dir="./data/processed",
 ):
     """
-    Computes chained HFACS probability:
-    P(B|A) × P(C|B) × ...
+    Computes all full HFACS chains (L4 → L3 → L2 → L1),
+    including both Error and Violation.
     """
 
-    probs = []
+    results = []
+    L4, L3, L2, L1 = hfacs_order
 
-    for i in range(len(chain) - 1):
-        parent = chain[i]
-        child = chain[i + 1]
+    for chain in product(L4, L3, L2, L1):
+        probs = []
 
-        file = Path(processed_dir) / f"P_given_{parent}.csv"
-        if not file.exists():
-            raise FileNotFoundError(f"Missing probability file: {file}")
+        for i in range(3):  # L4→L3, L3→L2, L2→L1
+            parent, child = chain[i], chain[i + 1]
+            file = Path(processed_dir) / f"HFACS_L{4-i}_to_L{3-i}.csv"
 
-        df = pd.read_csv(file)
+            df = pd.read_csv(file)
+            parent_col = [c for c in df.columns if c.endswith("_category")][0]
+            row = df[df[parent_col] == parent]
 
-        # ---- find the parent label column automatically ----
-        parent_cols = [c for c in df.columns if c.endswith("_category")]
-        if len(parent_cols) != 1:
-            raise ValueError(f"Ambiguous or missing parent category column in {file}")
+            probs.append(row[f"P_{child}"].iloc[0])
 
-        parent_col = parent_cols[0]
+        results.append({
+            "Chain": " → ".join(chain),
+            "Chained_Probability": round(reduce(lambda x, y: x * y, probs), 6),
+        })
 
-        # ---- select correct parent row ----
-        row = df[df[parent_col] == parent]
-        if row.empty:
-            raise ValueError(f"No probability row found for parent '{parent}' in {file}")
-
-        # ---- extract probability ----
-        col = f"P_{child}"
-        if col not in df.columns:
-            raise ValueError(f"Missing column {col} in {file}")
-
-        probs.append(row[col].iloc[0])
-
-    final_prob = reduce(lambda x, y: x * y, probs)
-
-    return pd.DataFrame(
-        {
-            "Chain": [" → ".join(chain)],
-            "Chained_Probability": [round(final_prob, 6)],
-        }
-    )
-
-
-# ============================================================
-# EXAMPLE USAGE (COMMENT OUT IF CALLED FROM main.py)
-# ============================================================
-
-if __name__ == "__main__":
-
-    # Load your processed dataset with HFACS categories already created
-    df = pd.read_csv("./data/processed/processed_output.csv")
-
-    print("[INFO] Computing HFACS-ordered conditional probabilities...")
-    compute_hfacs_ordered_probabilities(df)
-
-    print("[INFO] Computing example HFACS chain...")
-    chain = [
-        "Organizational_Process",
-        "Inadequate_Supervision",
-        "Error",
-    ]
-
-    chain_df = compute_full_hfacs_chain(chain)
-    print(chain_df)
+    return pd.DataFrame(results)
