@@ -44,7 +44,7 @@ hfacs_map = config["hfacs_categories"]
 # 2. LOAD RAW DATA
 # ============================================================
 
-with skip_run("skip", "load_raw_dataset") as check:
+with skip_run("run", "load_raw_dataset") as check:
     if check():
         print("[INFO] Loading raw dataset...")
         df = load_raw_dataset(
@@ -58,7 +58,7 @@ with skip_run("skip", "load_raw_dataset") as check:
 # 3. EXTRACT FACTOR COLUMNS
 # ============================================================
 
-with skip_run("skip", "extract_factor_columns") as check:
+with skip_run("run", "extract_factor_columns") as check:
     if check():
         print("[INFO] Extracting factor columns...")
         df = extract_factor_columns(
