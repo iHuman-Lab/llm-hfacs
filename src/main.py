@@ -15,14 +15,14 @@ from data.dataset import (
 )
 
 
-from features.hfacs_order_probability import compute_all_full_hfacs_chains, compute_hfacs_ordered_probabilities, conditional_probabilities_hfacs, HFACS_ORDER
+from features.hfacs_order_probability import compute_all_full_hfacs_chains, compute_hfacs_ordered_probabilities, conditional_probabilities_hfacs, HFACS_ORDER, compute_combined_hfacs_matrix
 
 # HFACS chain function
 #from models.prediction import compute_full_chain
 
 
 # ============================================================
-# 1. LOAD CONFIG
+# LOAD CONFIG
 # ============================================================
 
 with open("./configs/config.yaml", "r") as f:
@@ -34,7 +34,7 @@ hfacs_map = config["hfacs_categories"]
 
 
 # ============================================================
-# 2. LOAD RAW DATA
+#  LOAD RAW DATA
 # ============================================================
 
 with skip_run("run", "load_raw_dataset") as check:
@@ -48,7 +48,7 @@ with skip_run("run", "load_raw_dataset") as check:
 
 
 # ============================================================
-# 3. EXTRACT FACTOR COLUMNS
+# EXTRACT FACTOR COLUMNS
 # ============================================================
 
 with skip_run("run", "extract_factor_columns") as check:
@@ -63,7 +63,7 @@ with skip_run("run", "extract_factor_columns") as check:
 
 
 # ============================================================
-# 4. CREATE HFACS CATEGORY COLUMNS
+#  CREATE HFACS CATEGORY COLUMNS
 # ============================================================
 
 with skip_run("run", "create_hfacs_categories") as check:
@@ -78,7 +78,7 @@ with skip_run("run", "create_hfacs_categories") as check:
 
 
 # ============================================================
-# 5. SAVE FINAL DATASET
+# SAVE FINAL DATASET
 # ============================================================
 
 with skip_run("run", "save_outputs") as check:
@@ -94,7 +94,7 @@ with skip_run("run", "save_outputs") as check:
 
 
 # ============================================================
-# 7. COMPUTE HFACS-ORDERED CONDITIONAL PROBABILITIES
+#  COMPUTE HFACS-ORDERED CONDITIONAL PROBABILITIES
 # ============================================================
 
 with skip_run("run", "hfacs_ordered_probabilities") as check:
@@ -109,7 +109,7 @@ with skip_run("run", "hfacs_ordered_probabilities") as check:
 
 
 # ============================================================
-# 8. COMPUTE ALL HFACS FULL CHAINS (L4 → L1)
+# COMPUTE ALL HFACS FULL CHAINS (L4 → L1)
 # ============================================================
 
 with skip_run("run", "hfacs_full_chains") as check:
@@ -128,3 +128,21 @@ with skip_run("run", "hfacs_full_chains") as check:
 
         print("[INFO] HFACS full-chain computation complete.")
         print(all_chains_df.head())
+
+
+# ============================================================
+#  COMPUTE COMBINED HFACS MATRIX (L4 → L1, AGGREGATE)
+# ============================================================
+
+with skip_run("run", "hfacs_combined_matrix") as check:
+    if check():
+        print("[INFO] Computing combined HFACS matrix (L4 → L1)...")
+
+        combined_df = compute_combined_hfacs_matrix(
+            hfacs_order=HFACS_ORDER,
+            processed_dir="./data/processed",
+            filename="HFACS_L4_to_L1_combined.csv",
+        )
+
+        print("[INFO] Combined HFACS matrix saved.")
+        print(combined_df)

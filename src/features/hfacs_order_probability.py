@@ -144,3 +144,113 @@ def compute_all_full_hfacs_chains(
         })
 
     return pd.DataFrame(results)
+
+
+
+import pandas as pd
+from pathlib import Path
+
+def compute_combined_hfacs_matrix(
+    hfacs_order,
+    processed_dir="./data/processed",
+):
+    """
+    Combines HFACS conditional probability tables via matrix multiplication.
+    Uses existing HFACS_Lx_to_Ly.csv files (no recomputation).
+    """
+
+    matrices = []
+    index_names = None
+    final_col_names = None
+
+    # iterate L4→L3, L3→L2, L2→L1
+    for i in range(len(hfacs_order) - 1):
+        level_from = 4 - i
+        level_to = 3 - i
+
+        file = Path(processed_dir) / f"HFACS_L{level_from}_to_L{level_to}.csv"
+        df = pd.read_csv(file)
+
+        # parent category column
+        parent_col = [c for c in df.columns if c.endswith("_category")][0]
+
+        # probability columns
+        prob_cols = [c for c in df.columns if c.startswith("P_")]
+
+        # extract matrix
+        M = df[prob_cols].to_numpy()
+        matrices.append(M)
+
+        # row labels only from first matrix
+        if index_names is None:
+            index_names = df[parent_col].tolist()
+
+        # column labels always come from the last matrix
+        final_col_names = [c.replace("P_", "") for c in prob_cols]
+
+    # matrix multiplication (aggregation)
+    Full = matrices[0]
+    for M in matrices[1:]:
+        Full = Full.dot(M)
+
+    return pd.DataFrame(
+        Full,
+        index=index_names,
+        columns=final_col_names,
+    )
+
+
+def compute_combined_hfacs_matrix(
+    hfacs_order,
+    processed_dir="./data/processed",
+    filename="HFACS_L4_to_L1_combined.csv",
+):
+    """
+    Combines HFACS conditional probability tables via matrix multiplication
+    and SAVES the result to disk.
+
+    Output:
+        ./data/processed/HFACS_L4_to_L1_combined.csv
+    """
+
+    matrices = []
+    index_names = None
+    final_col_names = None
+
+    # iterate L4→L3, L3→L2, L2→L1
+    for i in range(len(hfacs_order) - 1):
+        level_from = 4 - i
+        level_to = 3 - i
+
+        file = Path(processed_dir) / f"HFACS_L{level_from}_to_L{level_to}.csv"
+        df = pd.read_csv(file)
+
+        parent_col = [c for c in df.columns if c.endswith("_category")][0]
+        prob_cols = [c for c in df.columns if c.startswith("P_")]
+
+        M = df[prob_cols].to_numpy()
+        matrices.append(M)
+
+        if index_names is None:
+            index_names = df[parent_col].tolist()
+
+        final_col_names = [c.replace("P_", "") for c in prob_cols]
+
+    # combine matrices
+    Full = matrices[0]
+    for M in matrices[1:]:
+        Full = Full.dot(M)
+
+    result_df = pd.DataFrame(
+        Full,
+        index=index_names,
+        columns=final_col_names,
+    )
+
+    # ===== SAVE =====
+    output_path = Path(processed_dir) / filename
+    result_df.to_csv(output_path)
+
+    print(f"[INFO] Combined HFACS matrix saved to {output_path}")
+
+    return result_df
