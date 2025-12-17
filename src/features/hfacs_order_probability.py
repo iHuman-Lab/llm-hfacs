@@ -148,55 +148,6 @@ def compute_all_full_hfacs_chains(
 
 
 
-def compute_combined_hfacs_matrix(
-    hfacs_order,
-    processed_dir="./data/processed",
-):
-    """
-    Combines HFACS conditional probability tables via matrix multiplication.
-    Uses existing HFACS_Lx_to_Ly.csv files (no recomputation).
-    """
-
-    matrices = []
-    index_names = None
-    final_col_names = None
-
-    # iterate L4→L3, L3→L2, L2→L1
-    for i in range(len(hfacs_order) - 1):
-        level_from = 4 - i
-        level_to = 3 - i
-
-        file = Path(processed_dir) / f"HFACS_L{level_from}_to_L{level_to}.csv"
-        df = pd.read_csv(file)
-
-        # parent category column
-        parent_col = [c for c in df.columns if c.endswith("_category")][0]
-
-        # probability columns
-        prob_cols = [c for c in df.columns if c.startswith("P_")]
-
-        # extract matrix
-        M = df[prob_cols].to_numpy()
-        matrices.append(M)
-
-        # row labels only from first matrix
-        if index_names is None:
-            index_names = df[parent_col].tolist()
-
-        # column labels always come from the last matrix
-        final_col_names = [c.replace("P_", "") for c in prob_cols]
-
-    # matrix multiplication (aggregation)
-    Full = matrices[0]
-    for M in matrices[1:]:
-        Full = Full.dot(M)
-
-    return pd.DataFrame(
-        Full,
-        index=index_names,
-        columns=final_col_names,
-    )
-
 
 def compute_combined_hfacs_matrix(
     hfacs_order,
