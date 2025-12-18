@@ -1,9 +1,165 @@
 import pandas as pd
+import numpy as np
+import pymc as pm
+import arviz as az
+import multiprocessing as mp
+import matplotlib.pyplot as plt
 
-DATA_PATH = r"C:\Users\elahe\OneDrive - Oklahoma A and M System\Elahe-oveisi-osu-resaerch\casualty\llm-hfacs\data\processed\step3_hfacs_categories.csv"
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.metrics import brier_score_loss
 
 
-df = pd.read_csv(DATA_PATH)
-print(df.shape)
-print(df.columns)
-print(df.head())
+# -----------------------------
+# Utils
+# -----------------------------
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def predict_error_probability(trace, X):
+    """
+    Predict P(Error) using posterior mean parameters
+    """
+    beta = trace.posterior["beta_L1"].mean(("chain", "draw")).values[:, 0]
+    intercept = trace.posterior["intercept_L1"].mean(("chain", "draw")).values[0]
+    return sigmoid(intercept + np.dot(X, beta))
+
+
+# -----------------------------
+# Main
+# -----------------------------
+def main():
+
+    # =====================================================
+    # 1. LOAD DATA
+    # =====================================================
+    DATA_PATH = r"C:\Users\elahe\OneDrive - Oklahoma A and M System\Elahe-oveisi-osu-resaerch\casualty\llm-hfacs\data\processed\step3_hfacs_categories.csv"
+
+    HFACS_L4 = ["Organizational_Process", "Organizational_Climate", "Resource_Management"]
+    HFACS_L3 = ["Inadequate_Supervision", "Failure_to_Correct"]
+    HFACS_L2 = ["Condition_of_Operators", "Personnel_Factors", "Situational_Factors"]
+    HFACS_L1 = ["Error", "Violation"]
+
+    df = (
+        pd.read_csv(DATA_PATH)[HFACS_L4 + HFACS_L3 + HFACS_L2 + HFACS_L1]
+        .dropna()
+        .astype(int)
+    )
+
+    # =====================================================
+    # 2. TRAIN / TEST SPLIT
+    # =====================================================
+    df_train, df_test = train_test_split(df, test_size=0.3, random_state=42)
+
+    coords = {
+        "L4_factors": HFACS_L4,
+        "L3_factors": HFACS_L3,
+        "L2_factors": HFACS_L2,
+        "L1_factors": HFACS_L1,
+    }
+
+    # =====================================================
+    # 3. FULL HFACS MODEL (TRAIN DATA ONLY)
+    # =====================================================
+    with pm.Model(coords=coords) as hfacs_model:
+
+        # L4 -> L3
+        beta_L3 = pm.Normal("beta_L3", 0, 1, dims=("L4_factors", "L3_factors"))
+        intercept_L3 = pm.Normal("intercept_L3", 0, 1, dims="L3_factors")
+        logits_L3 = intercept_L3 + pm.math.dot(df_train[HFACS_L4].values, beta_L3)
+        pm.Bernoulli("L3_obs", logit_p=logits_L3, observed=df_train[HFACS_L3].values)
+
+        # L3 -> L2
+        beta_L2 = pm.Normal("beta_L2", 0, 1, dims=("L3_factors", "L2_factors"))
+        intercept_L2 = pm.Normal("intercept_L2", 0, 1, dims="L2_factors")
+        logits_L2 = intercept_L2 + pm.math.dot(df_train[HFACS_L3].values, beta_L2)
+        pm.Bernoulli("L2_obs", logit_p=logits_L2, observed=df_train[HFACS_L2].values)
+
+        # L2 -> L1
+        beta_L1 = pm.Normal("beta_L1", 0, 1, dims=("L2_factors", "L1_factors"))
+        intercept_L1 = pm.Normal("intercept_L1", 0, 1, dims="L1_factors")
+        logits_L1 = intercept_L1 + pm.math.dot(df_train[HFACS_L2].values, beta_L1)
+        pm.Bernoulli("L1_obs", logit_p=logits_L1, observed=df_train[HFACS_L1].values)
+
+        trace = pm.sample(
+            draws=2000,
+            tune=2000,
+            chains=4,
+            cores=4,
+            target_accept=0.9
+        )
+
+    # =====================================================
+    # 4. TRAIN / TEST PERFORMANCE
+    # =====================================================
+    p_train = predict_error_probability(trace, df_train[HFACS_L2].values)
+    p_test = predict_error_probability(trace, df_test[HFACS_L2].values)
+
+    brier_train = brier_score_loss(df_train["Error"].values, p_train)
+    brier_test = brier_score_loss(df_test["Error"].values, p_test)
+
+    print(f"\nBrier Score (Train): {brier_train:.4f}")
+    print(f"Brier Score (Test):  {brier_test:.4f}")
+
+    # =====================================================
+    # 5. 5-FOLD CROSS-VALIDATION (L2 -> Error only)
+    # =====================================================
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = []
+
+    for i, (tr_idx, te_idx) in enumerate(kf.split(df)):
+        print(f"\n[CV] Fold {i+1}")
+
+        df_tr = df.iloc[tr_idx]
+        df_te = df.iloc[te_idx]
+
+        with pm.Model(coords={"L2_factors": HFACS_L2}) as cv_model:
+
+            beta = pm.Normal("beta", 0, 1, dims=("L2_factors",))
+            intercept = pm.Normal("intercept", 0, 1)
+
+            logits = intercept + pm.math.dot(df_tr[HFACS_L2].values, beta)
+            pm.Bernoulli("obs", logit_p=logits, observed=df_tr["Error"].values)
+
+            cv_trace = pm.sample(
+                draws=1000,
+                tune=1000,
+                chains=2,
+                cores=2,
+                target_accept=0.9,
+                progressbar=False
+            )
+
+        p_cv = sigmoid(
+            cv_trace.posterior["intercept"].mean(("chain", "draw")).values +
+            np.dot(
+                df_te[HFACS_L2].values,
+                cv_trace.posterior["beta"].mean(("chain", "draw")).values
+            )
+        )
+
+        cv_scores.append(
+            brier_score_loss(df_te["Error"].values, p_cv)
+        )
+
+    print("\nCV Brier Scores:", np.round(cv_scores, 4))
+    print("Mean CV Brier:", np.mean(cv_scores))
+
+    # =====================================================
+    # 6. TRAIN vs TEST PLOT
+    # =====================================================
+    plt.figure(figsize=(6, 4))
+    plt.bar(["Train", "Test"], [brier_train, brier_test])
+    plt.ylabel("Brier Score")
+    plt.title("Train vs Test Performance (Error Prediction)")
+    plt.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+
+# =====================================================
+# ENTRY POINT
+# =====================================================
+if __name__ == "__main__":
+    mp.freeze_support()
+    main()

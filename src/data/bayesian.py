@@ -54,7 +54,7 @@ def main():
         pm.Bernoulli("L1_obs", logit_p=logits_L1, observed=df[HFACS_L1].values)
 
         # 4. SAMPLE
-        trace = pm.sample(draws=1000, tune=1000, chains=1, cores=1, target_accept=0.8)
+        trace = pm.sample(draws=2000, tune=2000, chains=4, cores=4, target_accept=0.9)
 
     # 5. GENERATE NAMED SUMMARY
     print("\n[INFO] Sampling complete. Results with factor names:")
