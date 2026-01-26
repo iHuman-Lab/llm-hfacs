@@ -1,26 +1,95 @@
 import yaml
-import pandas as pd
-from data.seperator import extract_factors
-from features.conditional_prob import compute_conditional_probabilities
-from models.prediction import compute_full_chain
+
+from data.dataset import (
+    create_hfacs_categories,
+    extract_factor_columns,
+    load_raw_dataset,
+    save_outputs,
+)
+from features.hfacs_order_probability import (
+    HFACS_ORDER,
+    compute_all_full_hfacs_chains,
+    compute_combined_hfacs_matrix,
+    compute_hfacs_ordered_probabilities,
+)
 from utils import skip_run
 
-# The configuration file
-with open("./configs/config.yaml") as f:
-    config = yaml.load(f, Loader=yaml.SafeLoader)
+# HFACS chain function
+# from models.prediction import compute_full_chain
 
 
-with skip_run("skip", "extract_factors") as check, check():
-    extract_factors(config)
+with open("./configs/config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+paths = config["paths"]
+source_columns = config["source_columns"]
+hfacs_map = config["hfacs_categories"]
 
 
-with skip_run("skip", "compute_probability") as check, check():
-    df = pd.read_csv(config["output_path"]).fillna(0)
-    compute_conditional_probabilities(df, "level_4", "level_3", config)
-    compute_conditional_probabilities(df, "level_3", "level_2", config)
-    compute_conditional_probabilities(df, "level_2", "level_1", config)
+with skip_run("skip", "load_raw_dataset") as check, check():
+    print("[INFO] Loading raw dataset...")
+    df = load_raw_dataset(
+        paths["raw_data"],
+        save_cleaned=True,
+    )
+    print("[INFO] Raw shape:", df.shape)
 
 
-with skip_run("skip", "compute_final_probability") as check, check():
-    result = compute_full_chain(levels=[4, 3, 2, 1])
-    print(result)
+with skip_run("skip", "create_hfacs_category_data") as check, check():
+    print("[INFO] Extracting factor columns...")
+    df = extract_factor_columns(
+        df,
+        source_columns,
+        save_step=True,
+    )
+    print("[INFO] Creating HFACS categories...")
+    df = create_hfacs_categories(
+        df,
+        hfacs_map,
+        save_step=True,
+    )
+    save_outputs(
+        df,
+        paths["processed_csv"],
+        paths["processed_excel"],
+    )
+    print("[INFO] Saved CSV & Excel")
+
+
+with skip_run("skip", "hfacs_ordered_probabilities") as check, check():
+    print("[INFO] Computing HFACS-ordered conditional probabilities...")
+    compute_hfacs_ordered_probabilities(
+        df,
+        hfacs_order=HFACS_ORDER,
+        output_dir="./data/processed",
+    )
+    print("[INFO] HFACS ordered probability tables saved.")
+
+
+with skip_run("skip", "hfacs_full_chains") as check, check():
+    print("[INFO] Computing ALL HFACS full chains (Error + Violation)...")
+
+    all_chains_df = compute_all_full_hfacs_chains(
+        hfacs_order=HFACS_ORDER,
+        processed_dir="./data/processed",
+    )
+    all_chains_df.to_csv(
+        "./data/processed/HFACS_all_L4_to_L1_chains.csv",
+        index=False,
+    )
+
+    print("[INFO] HFACS full-chain computation complete.")
+    print(all_chains_df.head())
+
+
+with skip_run("skip", "hfacs_combined_matrix") as check, check():
+    print("[INFO] Computing combined HFACS matrix (L4 → L1)...")
+
+    combined_df = compute_combined_hfacs_matrix(
+        hfacs_order=HFACS_ORDER,
+        processed_dir="./data/processed",
+        filename="HFACS_L4_to_L1_combined.csv",
+    )
+
+    print("[INFO] Combined HFACS matrix saved.")
+    print(combined_df)

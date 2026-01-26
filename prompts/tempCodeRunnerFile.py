@@ -2,15 +2,8 @@ import pandas as pd
 from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import MaximumLikelihoodEstimator, HillClimbSearch, BicScore
 
-# =========================
-# 0) LOAD DATA
-# =========================
 file_path = r"C:\llm-hfacs\data\ASRS_all_factors.xlsx"
 df = pd.read_excel(file_path).fillna(0)
-
-# =========================
-# 1) NODE LISTS
-# =========================
 
 # Level 3: Contributing / organizational factors
 CF_nodes = [
@@ -70,9 +63,6 @@ print("Data shape used for BN:", df_bn.shape)
 print("CF nodes:", len(CF_nodes))
 print("PC nodes:", len(PC_nodes))
 
-# =========================
-# 2) STRUCTURE LEARNING
-# =========================
 white_list = [(cf, pc) for cf in CF_nodes for pc in PC_nodes]
 hc = HillClimbSearch(df_bn)
 
@@ -86,9 +76,6 @@ print("\n=== IMPORTANT DEPENDENCIES (learned BN edges) ===")
 for u, v in best_model.edges():
     print(f"{u}  -->  {v}")
 
-# =========================
-# 3) PARAMETER LEARNING
-# =========================
 model = BayesianNetwork(best_model.edges())
 model.fit(df_bn, estimator=MaximumLikelihoodEstimator)
 
@@ -98,10 +85,6 @@ print("Total edges in BN:", len(model.edges()))
 
 print("\n=== FINAL NODES INCLUDED IN BAYESIAN NETWORK ===")
 print(model.nodes())
-
-# =========================
-# 5) CLEAN & ONLY IMPORTANT CPDs (Parents only)
-# =========================
 
 # Use only PC nodes that actually remained in the BN
 final_PC_nodes = [n for n in PC_nodes if n in model.nodes()]

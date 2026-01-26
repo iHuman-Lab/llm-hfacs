@@ -1,120 +1,117 @@
-# Paths
-raw_data_path: './data/raw/ASRS_all_factors_raw.xlsx'
-output_path: './data/processed/ASRS_all_factors_extracted.csv'
+paths:
+  raw_data: './data/raw/ASRS_2015_2025_main.csv'
+  processed_csv: './data/processed/processed_output.csv'
+  processed_excel: './data/processed/processed_output.xlsx'
 
+source_columns:
+  Anomaly: 'Events_Anomaly'
+  HumanFactors: 'Person 1_Human Factors'
+  Contributing: 'Assessments_Contributing Factors / Situations'
 
-level_3: [
-        "Contributing Factors:Staffing",
-        "Contributing Factors:MEL",
-        "Contributing Factors:Manuals",
-    ]
+# HFACS CATEGORY MAPPINGS
 
-factors_mapping:
-  level_4:
-    Anamoly Deviations: ["Anomaly:Deviation - Altitude Excursion From Assigned Altitude",
-        "Anomaly:Deviation - Altitude Overshoot",
-        "Anomaly:Deviation - Altitude Undershoot",
-        "Anomaly:Deviation - Speed All Types",
-        "Anomaly:Deviation - Track / Heading All Types",
-        "Anomaly:Deviation / Discrepancy - Procedural Clearance",
-        "Anomaly:Deviation / Discrepancy - Procedural FAR",
-        "Anomaly:Deviation / Discrepancy - Procedural Hazardous Material Violation",
-        "Anomaly:Deviation / Discrepancy - Procedural Landing Without Clearance",
-        "Anomaly:Deviation / Discrepancy - Procedural MEL / CDL",
-        "Anomaly:Deviation / Discrepancy - Procedural Other / Unknown",
-        "Anomaly:Deviation / Discrepancy - Procedural Published Material / Policy",
-        "Anomaly:Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)",
-        "Anomaly:Deviation / Discrepancy - Procedural Weight And Balance"]
-    Anamoly Ground: [Anomaly:Ground Event / Encounter Jet Blast",
-        "Anomaly:Ground Excursion Ramp",
-        "Anomaly:Ground Excursion Runway",
-        "Anomaly:Ground Excursion Taxiway",
-        "Anomaly:Ground Incursion Ramp",
-        "Anomaly:Ground Incursion Runway",
-        "Anomaly:Ground Incursion Taxiway"]
-    
-level_4: [
-        "Contributing Factors:Chart Or Publication",
-        "Contributing Factors:Company Policy",
-        "Contributing Factors:Logbook Entry",
-        "Contributing Factors:Procedure",
-        "Contributing Factors:Incorrect / Not Installed / Unavailable Part",
-        "Contributing Factors:Human Factors",
-        "Contributing Factors:Software and Automation",
-        "Contributing Factors:Aircraft",
-        "Contributing Factors:Airport",
-        "Contributing Factors:Airspace Structure",
-        "Contributing Factors:ATC Equipment / Nav Facility / Buildings",
-        "Contributing Factors:Equipment / Tooling",
-    ]
+hfacs_categories:
+  Error:
+    - 'Anomaly_Conflict Airborne Conflict'
+    - 'Anomaly_Conflict Ground Conflict, Critical'
+    - 'Anomaly_Conflict Ground Conflict, Less Severe'
+    - 'Anomaly_Conflict NMAC'
+    - 'Anomaly_Deviation - Altitude Excursion From Assigned Altitude'
+    - 'Anomaly_Deviation - Altitude Overshoot'
+    - 'Anomaly_Deviation - Altitude Undershoot'
+    - 'Anomaly_Deviation - Speed All Types'
+    - 'Anomaly_Deviation - Track / Heading All Types'
+    - 'Anomaly_Inflight Event / Encounter Loss Of Aircraft Control'
+    - 'Anomaly_Ground Event / Encounter Loss Of Aircraft Control'
+    - 'Anomaly_Inflight Event / Encounter Unstabilized Approach'
+    - 'Anomaly_Inflight Event / Encounter VFR In IMC'
+    - 'Anomaly_Inflight Event / Encounter CFTT / CFIT'
+    - 'Anomaly_Inflight Event / Encounter Fly Away (UAS)'
+    - 'Anomaly_Inflight Event / Encounter Fuel Issue'
+    - 'Anomaly_Ground Event / Encounter Fuel Issue'
+    - 'Anomaly_Ground Event / Encounter Gear Up Landing'
 
+  Violation:
+    - 'Anomaly_Airspace Violation All Types'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Clearance'
+    - 'Anomaly_Deviation / Discrepancy - Procedural FAR'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Hazardous Material Violation'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Landing Without Clearance'
+    - 'Anomaly_Deviation / Discrepancy - Procedural MEL / CDL'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Other / Unknown'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Published Material / Policy'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Weight And Balance'
+    - 'Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Misconduct'
+    - 'Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Electronic Device'
 
-level_2: [
-        "Contributing Factors:Weather",
-        "Contributing Factors:Environment - Non Weather Related",
-        "Anomaly:Ground Event / Encounter Weather / Turbulence",
-        "Anomaly:Inflight Event / Encounter Weather / Turbulence",
-        "Anomaly:Inflight Event / Encounter Wake Vortex Encounter",
-        "Anomaly:Inflight Event / Encounter Bird / Animal",
-        "Anomaly:Ground Event / Encounter Person / Animal / Bird",
-        "Anomaly:Ground Event / Encounter FOD",
-        "Anomaly:Ground Event / Encounter Object",
-        "Anomaly:Inflight Event / Encounter Object",
-        "Anomaly:Ground Event / Encounter Jet Blast",
-        "Anomaly:Ground Excursion Ramp",
-        "Anomaly:Ground Excursion Runway",
-        "Anomaly:Ground Excursion Taxiway",
-        "Anomaly:Ground Incursion Ramp",
-        "Anomaly:Ground Incursion Runway",
-        "Anomaly:Ground Incursion Taxiway",
-        "Anomaly:ATC Issue All Types",
-        "Anomaly:Aircraft Equipment Problem Critical",
-        "Anomaly:Aircraft Equipment Problem Less Severe",
-        "Anomaly:Ground Event / Encounter Ground Equipment Issue",
-        "Contributing Factors:ATC Equipment / Nav Facility / Buildings",
-        "Contributing Factors:Equipment / Tooling",
-        "Contributing Factors:Software and Automation",
-        "Human Factors:Communication Breakdown",
-        "Human Factors:Confusion",
-        "Human Factors:Distraction",
-        "Human Factors:Situational Awareness",
-        "Human Factors:Time Pressure",
-        "Human Factors:Workload",
-        "Human Factors:Troubleshooting",
-        "Human Factors:Training / Qualification",
-        "Human Factors:Human-Machine Interface",
-        "Human Factors:Other / Unknown",
-        "Human Factors:Fatigue",
-        "Human Factors:Physiological - Other",
-    ]
+  Situational_Factors:
+    - 'Contributing_Weather'
+    - 'Contributing_Environment - Non Weather Related'
+    - 'Anomaly_Ground Event / Encounter Weather / Turbulence'
+    - 'Anomaly_Inflight Event / Encounter Weather / Turbulence'
+    - 'Anomaly_Inflight Event / Encounter Wake Vortex Encounter'
+    - 'Anomaly_Inflight Event / Encounter Bird / Animal'
+    - 'Anomaly_Ground Event / Encounter Person / Animal / Bird'
+    - 'Anomaly_Ground Event / Encounter FOD'
+    - 'Anomaly_Ground Event / Encounter Object'
+    - 'Anomaly_Inflight Event / Encounter Object'
+    - 'Anomaly_Ground Event / Encounter Jet Blast'
+    - 'Anomaly_Ground Excursion Ramp'
+    - 'Anomaly_Ground Excursion Runway'
+    - 'Anomaly_Ground Excursion Taxiway'
+    - 'Anomaly_Ground Incursion Ramp'
+    - 'Anomaly_Ground Incursion Runway'
+    - 'Anomaly_Ground Incursion Taxiway'
+    - 'Anomaly_ATC Issue All Types'
+    - 'Anomaly_Aircraft Equipment Problem Critical'
+    - 'Anomaly_Aircraft Equipment Problem Less Severe'
+    - 'Anomaly_Ground Event / Encounter Ground Equipment Issue'
+    - 'Contributing_ATC Equipment / Nav Facility / Buildings'
+    - 'Contributing_Equipment / Tooling'
+    - 'Contributing_Software and Automation'
 
-level_1: [
-        "Anomaly:Airspace Violation All Types",
-        "Anomaly:Conflict Airborne Conflict",
-        "Anomaly:Conflict Ground Conflict, Critical",
-        "Anomaly:Conflict Ground Conflict, Less Severe",
-        "Anomaly:Conflict NMAC",
-        "Anomaly:Deviation - Altitude Excursion From Assigned Altitude",
-        "Anomaly:Deviation - Altitude Overshoot",
-        "Anomaly:Deviation - Altitude Undershoot",
-        "Anomaly:Deviation - Speed All Types",
-        "Anomaly:Deviation - Track / Heading All Types",
-        "Anomaly:Deviation / Discrepancy - Procedural Clearance",
-        "Anomaly:Deviation / Discrepancy - Procedural FAR",
-        "Anomaly:Deviation / Discrepancy - Procedural Hazardous Material Violation",
-        "Anomaly:Deviation / Discrepancy - Procedural Landing Without Clearance",
-        "Anomaly:Deviation / Discrepancy - Procedural MEL / CDL",
-        "Anomaly:Deviation / Discrepancy - Procedural Other / Unknown",
-        "Anomaly:Deviation / Discrepancy - Procedural Published Material / Policy",
-        "Anomaly:Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)",
-        "Anomaly:Deviation / Discrepancy - Procedural Weight And Balance",
-        "Anomaly:Inflight Event / Encounter Loss Of Aircraft Control",
-        "Anomaly:Ground Event / Encounter Loss Of Aircraft Control",
-        "Anomaly:Inflight Event / Encounter Unstabilized Approach",
-        "Anomaly:Inflight Event / Encounter VFR In IMC",
-        "Anomaly:Inflight Event / Encounter CFTT / CFIT",
-        "Anomaly:Inflight Event / Encounter Fly Away (UAS)",
-        "Anomaly:Inflight Event / Encounter Fuel Issue",
-        "Anomaly:Ground Event / Encounter Fuel Issue",
-        "Anomaly:Ground Event / Encounter Gear Up Landing",
-    ]
+  Personnel_Factors:
+    - 'HumanFactors_Communication Breakdown'
+    - 'HumanFactors_Troubleshooting'
+    - 'HumanFactors_Training / Qualification'
+    - 'HumanFactors_Human-Machine Interface'
+
+  Condition_of_Operators:
+    - 'HumanFactors_Confusion'
+    - 'HumanFactors_Distraction'
+    - 'HumanFactors_Situational Awareness'
+    - 'HumanFactors_Time Pressure'
+    - 'HumanFactors_Workload'
+    - 'HumanFactors_Other / Unknown'
+    - 'HumanFactors_Fatigue'
+    - 'HumanFactors_Physiological - Other'
+
+  Inadequate_Supervision:
+    - 'Contributing_Staffing'
+    - 'Contributing_Manuals'
+
+  # There are very few categories, so doing conditional probability would give us wrong answers.
+  # Failure_to_Correct:
+  #   - "Contributing_MEL"
+
+  Organizational_Process:
+    - 'Contributing_Chart Or Publication'
+    - 'Contributing_Logbook Entry'
+    - 'Contributing_Procedure'
+    - 'Contributing_Manuals'
+    - 'Contributing_MEL'
+
+  Organizational_Climate:
+    - 'Contributing_Company Policy'
+    - 'Contributing_Human Factors'
+
+  Resource_Management:
+    - 'Contributing_Incorrect / Not Installed / Unavailable Part'
+    - 'Contributing_Software and Automation'
+    - 'Contributing_Aircraft'
+    - 'Contributing_Airport'
+    - 'Contributing_Airspace Structure'
+    - 'Contributing_ATC Equipment / Nav Facility / Buildings'
+    - 'Contributing_Equipment / Tooling'
+    - 'Contributing_Staffing'
