@@ -1,8 +1,6 @@
 import pandas as pd
 
-# ============================================================
-# 1. LOAD RAW DATA (save cleaned header)
-# ============================================================
+
 def load_raw_dataset(path, save_cleaned=True):
     # Load CSV with two-row header
     df = pd.read_csv(path, header=[0, 1])
@@ -17,9 +15,6 @@ def load_raw_dataset(path, save_cleaned=True):
     return df
 
 
-# ============================================================
-# 2. EXTRACT FACTORS (save factor-expanded output)
-# ============================================================
 def extract_factor_columns(df, source_columns, save_step=True):
     result = df.copy()
 
@@ -51,9 +46,6 @@ def extract_factor_columns(df, source_columns, save_step=True):
     return result
 
 
-# ============================================================
-# 3. HFACS CATEGORY MAPPING (save HFACS output)
-# ============================================================
 def create_hfacs_categories(df, category_map, save_step=True):
     result = df.copy()
 
@@ -74,9 +66,6 @@ def create_hfacs_categories(df, category_map, save_step=True):
     return result
 
 
-# ============================================================
-# 4. FINAL SAVE (CSV + Excel)
-# ============================================================
 def save_outputs(df, csv_path, excel_path):
     df.to_csv(csv_path, index=False)
     df.to_excel(excel_path, index=False)

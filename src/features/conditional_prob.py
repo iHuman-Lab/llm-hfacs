@@ -2,10 +2,6 @@ import pandas as pd
 from pathlib import Path
 
 
-# ============================================================
-# CORE CONDITIONAL PROBABILITY (CATEGORY → CATEGORY)
-# ============================================================
-
 def conditional_probabilities(
     df: pd.DataFrame,
     parent_categories: list[str],
@@ -44,10 +40,6 @@ def conditional_probabilities(
 
     return pd.DataFrame(rows)
 
-
-# ============================================================
-# COMPUTE ALL PAIRWISE HFACS CONDITIONAL PROBABILITIES
-# ============================================================
 
 def compute_all_hfacs_probabilities(
     df: pd.DataFrame,

@@ -1,11 +1,8 @@
-import pandas as pd
-from pathlib import Path
 from functools import reduce
 from itertools import product
+from pathlib import Path
 
-# ============================================================
-# HFACS ORDER (THEORY-CONSTRAINED)
-# ============================================================
+import pandas as pd
 
 HFACS_ORDER = [
     # Level 4 — Organizational Influences
@@ -17,7 +14,6 @@ HFACS_ORDER = [
     # Level 3 — Unsafe Supervision
     [
         "Inadequate_Supervision",
-        "Failure_to_Correct",
     ],
     # Level 2 — Preconditions for Unsafe Acts
     [
@@ -32,10 +28,6 @@ HFACS_ORDER = [
     ],
 ]
 
-
-# ============================================================
-# CONDITIONAL PROBABILITIES (HFACS-ORDERED ONLY)
-# ============================================================
 
 def conditional_probabilities_hfacs(df, parents, children, parent_label):
     """
@@ -69,10 +61,6 @@ def conditional_probabilities_hfacs(df, parents, children, parent_label):
 
     return pd.DataFrame(rows)
 
-
-# ============================================================
-# COMPUTE ALL HFACS-ORDERED PROBABILITY TABLES
-# ============================================================
 
 def compute_hfacs_ordered_probabilities(
     df,
@@ -109,10 +97,6 @@ def compute_hfacs_ordered_probabilities(
     return results
 
 
-# ============================================================
-# COMPUTE A FULL HFACS CHAIN (SCALAR, VALID)
-# ============================================================
-
 def compute_all_full_hfacs_chains(
     hfacs_order,
     processed_dir="./data/processed",
@@ -130,7 +114,7 @@ def compute_all_full_hfacs_chains(
 
         for i in range(3):  # L4→L3, L3→L2, L2→L1
             parent, child = chain[i], chain[i + 1]
-            file = Path(processed_dir) / f"HFACS_L{4-i}_to_L{3-i}.csv"
+            file = Path(processed_dir) / f"HFACS_L{4 - i}_to_L{3 - i}.csv"
 
             df = pd.read_csv(file)
             parent_col = [c for c in df.columns if c.endswith("_category")][0]
@@ -138,15 +122,14 @@ def compute_all_full_hfacs_chains(
 
             probs.append(row[f"P_{child}"].iloc[0])
 
-        results.append({
-            "Chain": " → ".join(chain),
-            "Chained_Probability": round(reduce(lambda x, y: x * y, probs), 6),
-        })
+        results.append(
+            {
+                "Chain": " → ".join(chain),
+                "Chained_Probability": round(reduce(lambda x, y: x * y, probs), 6),
+            }
+        )
 
     return pd.DataFrame(results)
-
-
-
 
 
 def compute_combined_hfacs_matrix(
