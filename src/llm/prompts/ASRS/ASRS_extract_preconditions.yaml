@@ -1,0 +1,39 @@
+temperature: 0
+
+system_prompt: |
+  You are an expert aviation safety analyst.
+  Mark Present = "Yes" ONLY when the narrative explicitly states evidence — not implies it.
+  Return only valid JSON. No commentary outside the JSON.
+
+step1_prompt: |
+  For each contributing factor, mark Present and quote the Evidence. Leave Evidence empty if No.
+
+  Situational_Factors — External conditions or anomalies that shaped the environment: weather (Contributing_Weather), non-weather environmental hazards (Contributing_Environment), ATC-related issues (Anomaly_ATC Issue All Types), aircraft equipment problems whether critical or less severe, and anomalous encounters on the ground or in flight including turbulence, wake vortex, wildlife or bird strike, FOD, vehicle, object, person, smoke/fire/fumes, or passenger electronic device events.
+  Personnel_Factors — Team and interface breakdowns: communication failure between crew or with ATC (HumanFactors_Communication Breakdown), inadequate troubleshooting by crew members (HumanFactors_Troubleshooting), or a human-machine interface mismatch (HumanFactors_Human-Machine Interface) that degraded task performance.
+  Condition_of_Operators — Individual state at the time of the event: confusion, distraction, or degraded situational awareness (HumanFactors_Confusion / Distraction / Situational Awareness), fatigue, excessive workload, or other physiological factors (HumanFactors_Fatigue / Workload / Physiological).
+  Inadequate_Supervision — Oversight shortfalls: understaffing (Contributing_Staffing), deficient manuals or documentation (Contributing_Manuals), or insufficient training and qualification for the specific task (HumanFactors_Training / Qualification).
+  Failed_to_Correct_Problem — A known defect was not remediated: the aircraft was dispatched or operated with an active MEL item (Contributing_MEL) that contributed to the event.
+  Planned_Inappropriate_Operations — Time pressure (HumanFactors_Time Pressure) drove a deliberate pre-planned departure from safe practice.
+  Supervisory_Violation — Deliberate deviation from company policy (Contributing_Company Policy) by crew or management.
+  Organizational_Process — Systemic failures: deficient procedures (Contributing_Procedure), software or automation issues, faulty equipment or tooling, ATC facility or navigation equipment problems (Contributing_ATC Equipment / Nav Facility / Buildings), chart or publication errors (Contributing_Chart Or Publication), logbook discrepancies (Contributing_Logbook Entry), incorrect or missing parts, or structural issues with the aircraft, airport, or airspace (Contributing_Aircraft / Airport / Airspace Structure).
+
+  Key boundaries:
+  • Situational_Factors: mark Yes only for explicitly stated external conditions — not inferred from the outcome alone.
+  • Personnel_Factors vs Condition_of_Operators: Personnel covers team interactions and interface issues; Condition covers an individual's internal cognitive or physiological state.
+  • Inadequate_Supervision vs Supervisory_Violation: Supervision is an unintentional oversight gap; Violation is a deliberate departure from policy.
+  • Failed_to_Correct_Problem vs Organizational_Process: Failed_to_Correct is specifically a known open MEL item; Organizational covers broader systemic procedure or equipment failures.
+
+  Return only valid JSON:
+  {
+    "Situational_Factors": {"Present": "Yes/No", "Evidence": ""},
+    "Personnel_Factors": {"Present": "Yes/No", "Evidence": ""},
+    "Condition_of_Operators": {"Present": "Yes/No", "Evidence": ""},
+    "Inadequate_Supervision": {"Present": "Yes/No", "Evidence": ""},
+    "Failed_to_Correct_Problem": {"Present": "Yes/No", "Evidence": ""},
+    "Planned_Inappropriate_Operations": {"Present": "Yes/No", "Evidence": ""},
+    "Supervisory_Violation": {"Present": "Yes/No", "Evidence": ""},
+    "Organizational_Process": {"Present": "Yes/No", "Evidence": ""}
+  }
+
+  Narrative:
+  {narrative}

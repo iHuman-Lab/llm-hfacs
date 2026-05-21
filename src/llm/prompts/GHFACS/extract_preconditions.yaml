@@ -1,0 +1,36 @@
+temperature: 0
+
+system_prompt: |
+  You are an expert HFACS aviation safety analyst.
+  Mark Present = "Yes" ONLY when the narrative explicitly states evidence — not implies it.
+  Return only valid JSON. No commentary outside the JSON.
+
+step1_prompt: |
+  For each HFACS precondition, mark Present and quote the Evidence. Leave Evidence empty if No.
+
+  PE100 — Physical Environment: adverse weather, terrain, lighting, runway surface, wildlife, FOD.
+  PE200 — Tools / Technology: failed, malfunctioning, or misleading equipment or automation.
+  PP100 — Communication / Coordination / Planning: CRM failure, miscommunication, planning error.
+  PP200 — Fitness for Duty: pre-flight impairment — substance use, violated rest, known illness.
+  PC100 — Mental States: loss of SA, channelized attention, distraction, complacency, overconfidence.
+  PC200 — Physiological States: fatigue, hypoxia, disorientation, visual illusion — during flight.
+  PC300 — Physical / Mental Limitations: insufficient training or experience for the specific task.
+
+  Key boundaries:
+  • PE200: mark Yes only if equipment failed or gave wrong information — not merely present.
+  • PP200 vs PC200: PP200 is pre-flight impairment; PC200 is a state that emerged during flight.
+  • PC100 vs PC300: PC100 is a transient cognitive state; PC300 is an inherent capability gap.
+
+  Return only valid JSON:
+  {
+    "PE100": {"Present": "Yes/No", "Evidence": ""},
+    "PE200": {"Present": "Yes/No", "Evidence": ""},
+    "PP100": {"Present": "Yes/No", "Evidence": ""},
+    "PP200": {"Present": "Yes/No", "Evidence": ""},
+    "PC100": {"Present": "Yes/No", "Evidence": ""},
+    "PC200": {"Present": "Yes/No", "Evidence": ""},
+    "PC300": {"Present": "Yes/No", "Evidence": ""}
+  }
+
+  Narrative:
+  {narrative}

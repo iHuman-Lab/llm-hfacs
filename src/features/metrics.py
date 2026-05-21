@@ -1,3 +1,15 @@
+def sklearn_metrics(y_true, y_pred):
+    """Compute accuracy, precision, recall, and F1 using scikit-learn."""
+    from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+    return {
+        "Accuracy": f"{accuracy_score(y_true, y_pred):.4f}",
+        "Precision": f"{precision_score(y_true, y_pred, zero_division=0):.4f}",
+        "Recall": f"{recall_score(y_true, y_pred, zero_division=0):.4f}",
+        "F1": f"{f1_score(y_true, y_pred, zero_division=0):.4f}",
+    }
+
+
 def calculate_confusion_matrix(predicted_positive, actual_positive, total_samples):
     """
     Calculate the confusion matrix components (TP, FN, FP, TN) and compute

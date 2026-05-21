@@ -1,0 +1,40 @@
+temperature: 0
+
+system_prompt: |
+  You are an expert aviation safety analyst.
+  Stage 1: extract contributing HFACS factors. Stage 2: classify the unsafe act using those factors as grounding.
+  Mark Present = "Yes" ONLY when the narrative explicitly states evidence — not implies it.
+  Return only valid JSON. No commentary outside the JSON.
+
+user_prompt_template: |
+  Stage 1 — Contributing Factors (mark Present, quote Evidence or leave empty if No):
+  Situational_Factors — External conditions or anomalies that shaped the environment: weather (Contributing_Weather), non-weather environmental hazards (Contributing_Environment), ATC-related issues (Anomaly_ATC Issue All Types), aircraft equipment problems whether critical or less severe, and anomalous encounters on the ground or in flight including turbulence, wake vortex, wildlife or bird strike, FOD, vehicle, object, person, smoke/fire/fumes, or passenger electronic device events.
+  Personnel_Factors — Team and interface breakdowns: communication failure between crew or with ATC (HumanFactors_Communication Breakdown), inadequate troubleshooting by crew members (HumanFactors_Troubleshooting), or a human-machine interface mismatch (HumanFactors_Human-Machine Interface) that degraded task performance.
+  Condition_of_Operators — Individual state at the time of the event: confusion, distraction, or degraded situational awareness (HumanFactors_Confusion / Distraction / Situational Awareness), fatigue, excessive workload, or other physiological factors (HumanFactors_Fatigue / Workload / Physiological).
+  Inadequate_Supervision — Oversight shortfalls: understaffing (Contributing_Staffing), deficient manuals or documentation (Contributing_Manuals), or insufficient training and qualification for the specific task (HumanFactors_Training / Qualification).
+  Failed_to_Correct_Problem — A known defect was not remediated: the aircraft was dispatched or operated with an active MEL item (Contributing_MEL) that contributed to the event.
+  Planned_Inappropriate_Operations — Time pressure (HumanFactors_Time Pressure) drove a deliberate pre-planned departure from safe practice.
+  Supervisory_Violation — Deliberate deviation from company policy (Contributing_Company Policy) by crew or management.
+  Organizational_Process — Systemic failures: deficient procedures (Contributing_Procedure), software or automation issues, faulty equipment or tooling, ATC facility or navigation equipment problems (Contributing_ATC Equipment / Nav Facility / Buildings), chart or publication errors (Contributing_Chart Or Publication), logbook discrepancies (Contributing_Logbook Entry), incorrect or missing parts, or structural issues with the aircraft, airport, or airspace (Contributing_Aircraft / Airport / Airspace Structure).
+
+  Stage 2 — Unsafe Act (use extracted factors as grounding):
+  Error — Unintentional act: tried to do the right thing but failed (skill error, decision error, perceptual error).
+  Violation — Intentional deviation: knew the rule existed, deliberately chose not to follow it (procedural, regulatory, routine).
+  Neither — No pilot unsafe act: external cause (ATC, equipment, weather) or reporter acted correctly throughout.
+
+  Gates before resolving ambiguity:
+  • Intentionality: knew the rule and deliberately skipped it → Violation; intended to comply but failed → Error.
+  • When unclear, prefer Error — deliberate non-compliance is the bar for Violation.
+  • Both present: resolve by evidence strength; choose the primary cause; set Confidence to "Medium" or "Low".
+
+  Derivation: decide Error and Violation independently, then derive Final_Class:
+  Q1=Y+Q2=N → "Error" | Q1=N+Q2=Y → "Violation" | both N → "Neither" | both Y → resolve by evidence strength
+
+  Ex1 Error — "On final approach at night I experienced a visual illusion and believed I was higher than I was. Visibility was reduced by fog. I crossed the threshold too low and landed short of the runway."
+  {"Situational_Factors":{"Present":"Yes","Evidence":"fog reduced visibility"},"Personnel_Factors":{"Present":"No","Evidence":""},"Condition_of_Operators":{"Present":"Yes","Evidence":"visual illusion — misperceived altitude on approach"},"Inadequate_Supervision":{"Present":"No","Evidence":""},"Failed_to_Correct_Problem":{"Present":"No","Evidence":""},"Planned_Inappropriate_Operations":{"Present":"No","Evidence":""},"Supervisory_Violation":{"Present":"No","Evidence":""},"Organizational_Process":{"Present":"No","Evidence":""},"Q1_Error":{"Final_Answer":"Yes","Short_Explanation":"Perceptual error — visual illusion caused unintentional misperception of altitude."},"Q2_Violation":{"Final_Answer":"No","Short_Explanation":"No intentional rule deviation described."},"Final_Class":"Error","Codes_Selected":["Error"],"Final_Justification":"Perceptual error in degraded visibility; no deliberate departure from procedure.","Confidence":"High"}
+  Ex2 Violation — "ATC was rushing us and I skipped the before-landing checklist. I landed gear-up. I was aware the checklist was required."
+  {"Situational_Factors":{"Present":"No","Evidence":""},"Personnel_Factors":{"Present":"No","Evidence":""},"Condition_of_Operators":{"Present":"No","Evidence":""},"Inadequate_Supervision":{"Present":"No","Evidence":""},"Failed_to_Correct_Problem":{"Present":"No","Evidence":""},"Planned_Inappropriate_Operations":{"Present":"Yes","Evidence":"ATC time pressure led to intentional checklist skip"},"Supervisory_Violation":{"Present":"No","Evidence":""},"Organizational_Process":{"Present":"Yes","Evidence":"required before-landing checklist procedure not followed"},"Q1_Error":{"Final_Answer":"No","Short_Explanation":"Skip was intentional — reporter knew the checklist was required."},"Q2_Violation":{"Final_Answer":"Yes","Short_Explanation":"Deliberately skipped a required checklist under time pressure."},"Final_Class":"Violation","Codes_Selected":["Violation"],"Final_Justification":"Intentional procedural skip despite known requirement; time pressure was a contributing factor.","Confidence":"High"}
+  Return only valid JSON:
+  {"Situational_Factors":{"Present":"Yes/No","Evidence":""},"Personnel_Factors":{"Present":"Yes/No","Evidence":""},"Condition_of_Operators":{"Present":"Yes/No","Evidence":""},"Inadequate_Supervision":{"Present":"Yes/No","Evidence":""},"Failed_to_Correct_Problem":{"Present":"Yes/No","Evidence":""},"Planned_Inappropriate_Operations":{"Present":"Yes/No","Evidence":""},"Supervisory_Violation":{"Present":"Yes/No","Evidence":""},"Organizational_Process":{"Present":"Yes/No","Evidence":""},"Q1_Error":{"Final_Answer":"Yes/No","Short_Explanation":""},"Q2_Violation":{"Final_Answer":"Yes/No","Short_Explanation":""},"Final_Class":"Error/Violation/Neither","Codes_Selected":[],"Final_Justification":"","Confidence":"Low/Medium/High"}
+  Narrative:
+  {narrative}

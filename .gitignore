@@ -110,6 +110,11 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+tempCodeRunnerFile.*
+
+# Claude
+claude*.md
+CLAUDE*.md
 
 # Data folder
 data/*
