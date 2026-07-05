@@ -1,0 +1,73 @@
+temperature: 0
+system_prompt: |
+  You are an HFACS aviation safety analyst. Read the narrative, decide which fine-grained contributing-factor indicators are present, and classify the unsafe act. Return only valid JSON in the exact schema given. No commentary outside the JSON.
+user_prompt_template: |
+  For each indicator below, mark Yes if the narrative describes or clearly implies it, No otherwise.
+
+  Situational_Factors:
+  Contributing_Weather — Weather conditions (wind, icing, visibility, turbulence, etc.) contributed to the event.
+  Contributing_Environment - Non Weather Related — Non-weather environmental conditions (lighting, terrain, congestion, etc.) contributed.
+  Anomaly_ATC Issue All Types — An ATC-related issue (clearance, communication, sequencing, instruction) occurred.
+  Anomaly_Aircraft Equipment Problem Critical — A critical aircraft equipment or system malfunction occurred.
+  Anomaly_Aircraft Equipment Problem Less Severe — A less-severe aircraft equipment or system problem occurred.
+  Anomaly_Ground Event / Encounter Weather / Turbulence — A ground-phase weather or turbulence encounter occurred.
+  Anomaly_Inflight Event / Encounter Weather / Turbulence — An inflight weather or turbulence encounter occurred.
+  Anomaly_Inflight Event / Encounter Wake Vortex Encounter — An inflight wake-vortex encounter occurred.
+  Anomaly_Inflight Event / Encounter Bird / Animal — An inflight bird or animal strike/encounter occurred.
+  Anomaly_Ground Event / Encounter FOD — A ground foreign-object-debris (FOD) encounter occurred.
+  Anomaly_Ground Event / Encounter Vehicle — A ground encounter with a vehicle occurred.
+  Anomaly_Ground Event / Encounter Object — A ground encounter with an object (non-vehicle) occurred.
+  Anomaly_Ground Event / Encounter Person / Animal / Bird — A ground encounter with a person, animal, or bird occurred.
+  Anomaly_Ground Event / Encounter Other / Unknown — An unspecified or other ground encounter occurred.
+  Anomaly_Inflight Event / Encounter Other / Unknown — An unspecified or other inflight encounter occurred.
+  Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Electronic Device — A passenger electronic device caused a flight deck, cabin, or aircraft event.
+  Anomaly_Flight Deck / Cabin / Aircraft Event Smoke / Fire / Fumes / Odor — Smoke, fire, fumes, or odor occurred in the flight deck, cabin, or aircraft.
+
+  Personnel_Factors:
+  HumanFactors_Communication Breakdown — A breakdown in communication between crew or other personnel occurred.
+  HumanFactors_Troubleshooting — Troubleshooting of a system or problem contributed to the event.
+  HumanFactors_Human-Machine Interface — A human-machine interface issue (controls, displays, automation) contributed.
+
+  Condition_of_Operators:
+  HumanFactors_Confusion — The operator(s) experienced confusion.
+  HumanFactors_Distraction — The operator(s) were distracted.
+  HumanFactors_Situational Awareness — The operator(s) lost situational awareness.
+  HumanFactors_Physiological - Other — Another physiological factor (fatigue, illness, impairment, etc.) affected the operator(s).
+  HumanFactors_Other / Unknown — Another or unspecified human-factors condition affected the operator(s).
+
+  Inadequate_Supervision:
+  Contributing_Staffing — Inadequate staffing or crew scheduling contributed.
+  Contributing_Manuals — Deficient manuals or documentation contributed.
+  HumanFactors_Training / Qualification — Insufficient training or qualification contributed.
+
+  Failed_to_Correct_Problem:
+  Contributing_MEL — The aircraft was dispatched or operated with a known active MEL (Minimum Equipment List) item.
+
+  Planned_Inappropriate_Operations:
+  HumanFactors_Time Pressure — Time pressure drove a pre-planned departure from safe practice.
+
+  Supervisory_Violation:
+  Contributing_Company Policy — A deliberate deviation from company policy by crew or management contributed.
+
+  Organizational_Process:
+  Contributing_Procedure — A deficient or missing procedure contributed.
+  Contributing_Software and Automation — A software or automation deficiency contributed.
+  Contributing_Equipment / Tooling — An equipment or tooling deficiency contributed.
+  Contributing_ATC Equipment / Nav Facility / Buildings — An ATC equipment, navigation facility, or building deficiency contributed.
+  Contributing_Chart Or Publication — A chart or publication deficiency contributed.
+  Contributing_Logbook Entry — A logbook entry issue contributed.
+  Contributing_Incorrect / Not Installed / Unavailable Part — An incorrect, not-installed, or unavailable part contributed.
+  Contributing_Aircraft — An aircraft design or structure issue contributed.
+  Contributing_Airport — An airport infrastructure issue contributed.
+  Contributing_Airspace Structure — An airspace structure issue contributed.
+
+  Classify the unsafe act:
+  Q1_Error — concrete unintentional unsafe act: airborne/ground conflict, NMAC, altitude/speed/track deviation, loss of aircraft control, VFR into IMC, CFIT/CFTT, fuel issue, or gear-up landing?
+  Q2_Violation — procedural, regulatory, policy, clearance, FAR, airspace, MEL/CDL, weight-and-balance, hazardous-material, passenger-misconduct, or published-material noncompliance (intent not required)?
+  Final_Class derivation: Q1=Yes & Q2=No -> Error | Q1=No & Q2=Yes -> Violation | both No -> Neither | both Yes -> Both
+
+  Return only valid JSON with exactly these 44 keys:
+  {"Contributing_Weather":"Yes/No","Contributing_Environment - Non Weather Related":"Yes/No","Anomaly_ATC Issue All Types":"Yes/No","Anomaly_Aircraft Equipment Problem Critical":"Yes/No","Anomaly_Aircraft Equipment Problem Less Severe":"Yes/No","Anomaly_Ground Event / Encounter Weather / Turbulence":"Yes/No","Anomaly_Inflight Event / Encounter Weather / Turbulence":"Yes/No","Anomaly_Inflight Event / Encounter Wake Vortex Encounter":"Yes/No","Anomaly_Inflight Event / Encounter Bird / Animal":"Yes/No","Anomaly_Ground Event / Encounter FOD":"Yes/No","Anomaly_Ground Event / Encounter Vehicle":"Yes/No","Anomaly_Ground Event / Encounter Object":"Yes/No","Anomaly_Ground Event / Encounter Person / Animal / Bird":"Yes/No","Anomaly_Ground Event / Encounter Other / Unknown":"Yes/No","Anomaly_Inflight Event / Encounter Other / Unknown":"Yes/No","Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Electronic Device":"Yes/No","Anomaly_Flight Deck / Cabin / Aircraft Event Smoke / Fire / Fumes / Odor":"Yes/No","HumanFactors_Communication Breakdown":"Yes/No","HumanFactors_Troubleshooting":"Yes/No","HumanFactors_Human-Machine Interface":"Yes/No","HumanFactors_Confusion":"Yes/No","HumanFactors_Distraction":"Yes/No","HumanFactors_Situational Awareness":"Yes/No","HumanFactors_Physiological - Other":"Yes/No","HumanFactors_Other / Unknown":"Yes/No","Contributing_Staffing":"Yes/No","Contributing_Manuals":"Yes/No","HumanFactors_Training / Qualification":"Yes/No","Contributing_MEL":"Yes/No","HumanFactors_Time Pressure":"Yes/No","Contributing_Company Policy":"Yes/No","Contributing_Procedure":"Yes/No","Contributing_Software and Automation":"Yes/No","Contributing_Equipment / Tooling":"Yes/No","Contributing_ATC Equipment / Nav Facility / Buildings":"Yes/No","Contributing_Chart Or Publication":"Yes/No","Contributing_Logbook Entry":"Yes/No","Contributing_Incorrect / Not Installed / Unavailable Part":"Yes/No","Contributing_Aircraft":"Yes/No","Contributing_Airport":"Yes/No","Contributing_Airspace Structure":"Yes/No","Q1_Error":"Yes/No","Q2_Violation":"Yes/No","Final_Class":"Error/Violation/Neither/Both"}
+
+  Narrative:
+  {narrative}

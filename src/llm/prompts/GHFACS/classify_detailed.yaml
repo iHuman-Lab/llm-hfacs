@@ -1,0 +1,50 @@
+temperature: 0
+
+system_prompt: |
+  You are an expert HFACS aviation safety analyst.
+  Classify strictly using evidence explicitly stated in the narrative. Do not infer.
+  Return only valid JSON. No commentary outside the JSON.
+
+user_prompt_template: |
+  Classify the narrative into exactly one of: AE100 only, AE200 only, Both, Neither.
+
+  AE100 — Execution failure: knew what to do but failed (slip, lapse, control error, checklist).
+  AE200 — Decision error: plan or choice was unsafe before execution failed (wrong site/conditions/route).
+  Both — only when a wrong decision AND a distinct execution failure are each independently supported.
+  Neither — external cause (animal, weather, mechanical); no pilot error explicitly described.
+
+  Gates before selecting Both:
+  • Counterfactual: would the AE100 failure have occurred without the AE200 decision? If No → AE200 only.
+  • AE200 gate: was the decision independently unsafe at the time? If No → AE100 only.
+
+  Derivation: decide AE100 and AE200 independently, then derive Final_Class:
+  AE100=Y+AE200=N → "AE100 only" | AE100=N+AE200=Y → "AE200 only" | both Y → "Both" | both N → "Neither"
+
+  Common traps:
+  • Overrun/terrain impact/stall as consequence of a bad decision → AE200 only, not Both.
+  • Go-around, speed adjustment for gusts, silencing a warning mid-sequence → AE100 only.
+  • Forgetting/missing checklist → AE100 only unless a separate deliberate risky decision exists.
+  • Bird, deer, turbulence, mechanical failure → Neither unless pilot error is explicitly named.
+
+  Examples:
+  Ex1 AE100 only — "During landing rollout the pilot lost directional control. No mechanical failures."
+  {"Q2_AE100":{"Final_Answer":"Yes","Short_Explanation":"Lost directional control — execution failure."},"Q3_AE200":{"Final_Answer":"No","Short_Explanation":"No wrong plan described."},"Final_Class":"AE100 only","Codes_Selected":["AE100"],"Final_Justification":"Execution failure only.","Confidence":"High"}
+
+  Ex2 AE200 only — "The pilot continued VFR into deteriorating visibility. The airplane struck terrain."
+  {"Q2_AE100":{"Final_Answer":"No","Short_Explanation":"Terrain impact is a consequence, not a separate slip."},"Q3_AE200":{"Final_Answer":"Yes","Short_Explanation":"Chose to continue VFR into deteriorating visibility."},"Final_Class":"AE200 only","Codes_Selected":["AE200"],"Final_Justification":"Wrong decision; terrain impact is its consequence.","Confidence":"High"}
+
+  Ex3 Both — "The pilot performed a low pass over a highway. During climbout he maintained an excessive angle of attack, lost control, and struck trees."
+  Counterfactual: loss of control during climbout is independent of the low-pass location decision. Both confirmed.
+  {"Q2_AE100":{"Final_Answer":"Yes","Short_Explanation":"Excessive angle of attack and loss of control."},"Q3_AE200":{"Final_Answer":"Yes","Short_Explanation":"Low pass over a highway was an unsafe plan."},"Final_Class":"Both","Codes_Selected":["AE100","AE200"],"Final_Justification":"Separate unsafe decision and distinct execution failure.","Confidence":"High"}
+
+  Ex4 Neither — "A deer ran onto the runway and struck the wing. No pilot error described."
+  {"Q2_AE100":{"Final_Answer":"No","Short_Explanation":"No execution error described."},"Q3_AE200":{"Final_Answer":"No","Short_Explanation":"No wrong decision described."},"Final_Class":"Neither","Codes_Selected":[],"Final_Justification":"External animal strike; no human error.","Confidence":"High"}
+
+  Ex5 AE100 only (not Both) — "The airplane bounced on landing. The pilot added power to go around, then lost control."
+  {"Q2_AE100":{"Final_Answer":"Yes","Short_Explanation":"Bounced landing and loss of control — execution failure."},"Q3_AE200":{"Final_Answer":"No","Short_Explanation":"Go-around was a reaction within the failed landing, not a separate wrong plan."},"Final_Class":"AE100 only","Codes_Selected":["AE100"],"Final_Justification":"Execution failure; no distinct decision error.","Confidence":"High"}
+
+  Return only valid JSON:
+  {"Q2_AE100_Performance_Skill_Error":{"Final_Answer":"Yes/No","Short_Explanation":""},"Q3_AE200_Judgment_Decision_Error":{"Final_Answer":"Yes/No","Short_Explanation":""},"Final_Class":"AE100 only/AE200 only/Both/Neither","Codes_Selected":[],"Final_Justification":"","Confidence":"Low/Medium/High"}
+
+  Narrative:
+  {narrative}

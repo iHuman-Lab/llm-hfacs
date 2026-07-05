@@ -1,0 +1,112 @@
+temperature: 0
+system_prompt: |
+  You are an expert HFACS aviation safety analyst.
+  Mark 1 when the narrative explicitly describes OR clearly implies the factor; 0 if absent.
+  Return only valid JSON - no commentary outside the JSON.
+user_prompt_template: |
+  For each factor return 1 (present/implied) or 0 (absent).
+
+  Factor definitions:
+  {factors}
+
+  Key boundaries:
+  - Complacency/Expectation Bias = assumed fine without checking; Attention Failure = looked but missed or was distracted.
+  - Memory Lapse = intended to act but forgot; Attention Failure = failed to notice while present.
+  - Workload/Cognitive Saturation = too many tasks; Mental Overload = information too complex to process.
+  - Operational Pressure = external pressure from schedule, management, or commercial demands.
+  - Coordination Failure = who/when not agreed; Information Transfer Failure = specific info not passed (can co-occur).
+  - Verification Failure = skipped a check before acting; Monitoring Failure = failed to watch during operation.
+  - Documentation Issue = document existed but was missing, wrong, ambiguous, incomplete, or outdated.
+  - Unresolved Maintenance Issue = open maintenance item existed before this event.
+
+  --- EXAMPLES ---
+  Example 1 - Verification Failure=1, Information Transfer Failure=1, Coordination Failure=1, Maintenance Coordination=1, Memory Lapse=0:
+  "We repacked the nose gear strut at ZZZ and released the aircraft. It flew all day and overnighted at XXX.
+  Next morning the torque links separated. The job card lacked the required buyback step; the next crew was never told."
+
+  Example 2 - Workload/Cognitive Saturation=1, Decision Making/Judgment=1, Monitoring Failure=1:
+  "At FL250 gear door warnings lit up while ATC questioned our altitude. We were simultaneously managing
+  airspeed, gear indicators, ATC responses, and a divert decision. We lost track of altitude during this time."
+  --- END EXAMPLES ---
+
+  Fill in this JSON:
+  {template}
+
+  Narrative:
+  {narrative}
+factors:
+  "HumanFactors_Complacency / Expectation Bias": >
+    Operator assumed conditions were normal based on routine or habit without verifying.
+    Also covers expectation bias: perceiving what was expected rather than what was actually present.
+  "HumanFactors_Attention Failure": >
+    Operator failed to direct, sustain, or distribute attention appropriately. Includes inattention,
+    tunneling, fixation on one task while ignoring others, and distraction at a critical moment.
+  "HumanFactors_Workload / Cognitive Saturation": >
+    Total task demand exceeded the operator's capacity, such as too many tasks at once,
+    time pressure, or simultaneous competing system demands during an emergency.
+  "HumanFactors_Memory Lapse": >
+    Operator intended to perform an action but forgot to do so at the moment of execution.
+    The action was planned but slipped from memory.
+  "HumanFactors_Mental Overload": >
+    Information complexity exceeded the operator's cognitive processing capacity, causing
+    confusion or inability to integrate and reason. Distinct from task-volume overload.
+  "HumanFactors_Emotional State": >
+    An emotional condition, such as anxiety, frustration, anger, overconfidence, or fear,
+    negatively influenced the operator's performance or decision-making.
+  "HumanFactors_Decision Making / Judgment": >
+    Operator made a poor or unsafe decision, or exercised flawed judgment, such as choosing
+    the wrong course of action, continuing into deteriorating conditions, or failing to act when required.
+  "HumanFactors_Risk Assessment": >
+    Operator failed to adequately identify, evaluate, or account for the risks of a situation
+    or planned action. Includes failing to recognize a hazard or underestimating its severity.
+  "HumanFactors_Prioritization Failure": >
+    Operator failed to order tasks by importance, causing critical tasks to be neglected
+    or delayed in favor of lower-priority ones.
+  "HumanFactors_Inadequate Planning": >
+    Operator failed to adequately plan the task or flight before execution, missing
+    requirements, contingencies, equipment needs, or procedural steps.
+  "HumanFactors_Mission Complexity Mismanagement": >
+    The complexity or scope of the mission was underestimated or not adequately managed,
+    resulting in the operator being overwhelmed by what the task actually demanded.
+  "HumanFactors_Coordination Failure": >
+    Individuals or teams failed to coordinate actions, intentions, or roles, creating gaps,
+    overlaps, or conflicting actions around who does what and when.
+  "HumanFactors_Maintenance Coordination": >
+    Coordination failure specific to maintenance, between technicians, shifts, departments,
+    or between maintenance and flight operations.
+  "HumanFactors_Verification Failure": >
+    Operator failed to verify or cross-check a critical state or completed action before
+    proceeding. A required check was omitted entirely.
+  "HumanFactors_Monitoring Failure": >
+    Operator failed to maintain adequate vigilance of systems, instruments, or the
+    environment during an ongoing operation.
+  "HumanFactors_Information Transfer Failure": >
+    Critical information was not communicated or was lost when moving between people,
+    shifts, crews, or phases of operation.
+  "Contributing_Visual Limitation": >
+    Reduced visibility from weather, darkness, glare, or obstructions prevented the
+    operator from seeing critical elements.
+  "Contributing_Lighting Condition": >
+    Inadequate illumination, glare, or abrupt lighting transition made it difficult
+    to see or detect a relevant element.
+  "Contributing_Terrain / Obstacle Environment": >
+    Terrain, obstacles, or airspace geometry limited options, reduced margins, or
+    demanded disproportionate operator attention.
+  "Contributing_Operational Complexity": >
+    Overall complexity of the operational environment, such as airspace, traffic, weather,
+    or multi-leg routing, contributed beyond any single element.
+  "Contributing_Unresolved Maintenance Issue": >
+    A specific, identified maintenance deficiency or open action item existed at the
+    time of the incident and had not been corrected.
+  "Contributing_Documentation Issue": >
+    Written documentation was missing, incorrect, ambiguous, or outdated and
+    contributed structurally to the incident.
+  "Contributing_Workflow Design": >
+    Design of the work process or task sequence made the error easy to commit through
+    illogical sequencing or flows that predictably produce omissions.
+  "HumanFactors_Checklist Compliance": >
+    Operator failed to properly use a required checklist, such as skipping items,
+    completing from memory, reading without performing, or using the wrong checklist.
+  "HumanFactors_Operational Pressure": >
+    External pressure from schedule, management, or commercial demands influenced the
+    operator to accept greater risk or make unsafe choices.

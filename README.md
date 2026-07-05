@@ -1,3 +1,43 @@
+# LLM-HFACS
+
+## When Planes Have Bad Days, We Figure Out Why
+
+> *"To err is human. To analyze those errors with LLMs is... this project."*
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+## What Is This Sorcery?
+
+Ever wondered what *really* causes aviation incidents? Spoiler: it's rarely just one thing. It's usually a spectacular domino effect of organizational chaos, supervisory slip-ups, human factors, and that one moment where someone thought "eh, what's the worst that could happen?"
+
+**LLM-HFACS** is a data pipeline that takes raw aviation incident reports from NASA's ASRS (Aviation Safety Reporting System) and transforms them into structured insights using the **Human Factors Analysis and Classification System (HFACS)** framework — with a little help from our AI friends.
+
+
+## The HFACS Pyramid of "How Did We Get Here?"
+
+```
+                    ┌─────────────────────────┐
+                    │   ORGANIZATIONAL        │  ← "The fish rots from the head"
+                    │   INFLUENCES (L4)       │     Resource issues, climate, processes
+                    └───────────┬─────────────┘
+                                │
+                    ┌───────────▼─────────────┐
+                    │   UNSAFE SUPERVISION    │  ← "My boss did what now?"
+                    │         (L3)            │     Inadequate oversight, ignored problems
+                    └───────────┬─────────────┘
+                                │
+                    ┌───────────▼─────────────┐
+                    │   PRECONDITIONS FOR     │  ← "I haven't slept in 36 hours"
+                    │   UNSAFE ACTS (L2)      │     Fatigue, stress, poor communication
+                    └───────────┬─────────────┘
+                                │
+                    ┌───────────▼─────────────┐
+                    │     UNSAFE ACTS (L1)    │  ← "Oops"
+                    │   Errors & Violations   │     The thing that actually happened
+                    └─────────────────────────┘
+```
+
 # 🚁 LLM-HFACS
 
 > *Teaching AI to figure out why helicopters go "oops"*
@@ -6,7 +46,6 @@
 
 **LLM-HFACS** is a research project that uses Large Language Models to automatically analyze aviation accident reports and classify them according to the **Human Factors Analysis and Classification System (HFACS)**. Because reading 215+ accident reports manually is *so* last decade.
 
----
 
 ## 🎯 What Does This Thing Do?
 
@@ -20,7 +59,6 @@ This project takes those accident narratives and feeds them to LLMs that answer 
 📄 Accident Report  →  🤖 LLM Magic  →  ✅ HFACS Classification
 ```
 
----
 
 ## 🧠 The HFACS Framework
 
@@ -35,7 +73,6 @@ HFACS is a fancy taxonomy that breaks down human errors into 4 levels:
 
 Think of it as a blame pyramid 🔺 — the deeper you go, the more systemic the issue!
 
----
 
 ## 🤖 Supported Models
 
@@ -46,7 +83,6 @@ We've tested this with:
 | `gpt-4o-mini`          | OpenAI Cloud ☁️          | Fast and cheap, our daily driver      |
 | `qwen2.5:32b-instruct` | Ollama (local/remote) 🖥️ | When you want to keep your data close |
 
----
 
 ## 🎪 Prompting Strategies
 
@@ -60,7 +96,6 @@ We don't just ask the LLM once and call it a day. We've implemented **5 differen
 | **Chain-of-Thought** | "Think step by step..."         | ⭐⭐⭐        |
 | **Tree-of-Thought**  | Hierarchical reasoning          | ⭐⭐⭐⭐       |
 
----
 
 ## 📁 Project Structure
 
@@ -83,7 +118,6 @@ llm-hfacs/
     └── config.yaml          # API keys and settings
 ```
 
----
 
 ## 🚀 Getting Started
 
@@ -111,7 +145,6 @@ python src/main.py
 
 Then sit back and watch the progress bars go brrrrr 📊
 
----
 
 ## 📊 What You Get
 
@@ -127,8 +160,6 @@ After running, you'll find:
 
 Plus a warm fuzzy feeling of automating tedious work ✨
 
----
-
 ## 🔬 Research Questions
 
 This project investigates:
@@ -139,7 +170,6 @@ This project investigates:
 
 **Spoiler:** Check the `data/results/` folder for answers!
 
----
 
 ## 📈 Metrics We Track
 
@@ -149,8 +179,6 @@ This project investigates:
 | **Recall**    | Does the AI find all the factors humans found? |
 | **F1 Score**  | The harmonious balance of both                 |
 
-
----
 
 ## 🏗️ Architecture
 
@@ -168,15 +196,12 @@ This project investigates:
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
----
-
 ## 🤝 Contributing
 
 Found a bug? Have an idea? PRs welcome!
 
 Just remember: we're trying to make aviation *safer*, not give the AI ideas 😅
 
----
 
 ## 🏢 About
 
@@ -186,7 +211,6 @@ Built with ❤️ at **iHuman Lab**
 
 <p><small>Project based on the <a target="_blank" href="https://github.com/iHuman-Lab/ihuman-cookiecutter-data-science">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
----
 
 <p align="center">
   <i>"I asked GPT-4 to classify an accident report. It said 'skill-based error.' I felt personally attacked."</i>

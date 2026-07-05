@@ -1,0 +1,42 @@
+finetune:
+
+  labeled_data: "./data/processed/finetune_ready.csv"
+  narrative_column: "Report 1_Narrative"
+  class_column: "category"
+
+  prompt_yaml: null
+
+  classes:
+    - "Error"
+    - "Violation"
+    - "Neither"
+    - "Both"
+
+  base_model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  hf_token: "" # set via env var / Colab secret, do not commit a real token
+
+  lora:
+    r: 16
+    alpha: 16
+    dropout: 0.1
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+
+  training:
+    epochs: 5
+    batch_size: 2
+    grad_accum: 4
+    learning_rate: 0.0002
+    max_seq_len: 1024
+
+  checkpoint_dir: "/content/checkpoints"
+  adapter_save_path: "./models/hfacs_lora_adapter"
+
+  new_data_path: "./data/intermediate/balanced_processed_output_undersampled.csv"
+  inference_output: "./data/outputs/classified_results.csv"

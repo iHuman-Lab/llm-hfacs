@@ -1,0 +1,23 @@
+strict digraph {
+Situational_Factors;
+Personnel_Factors;
+Condition_of_Operators;
+Inadequate_Supervision;
+Failed_to_Correct_Problem;
+Planned_Inappropriate_Operations;
+Supervisory_Violation;
+Organizational_Process;
+Error;
+Violation;
+Situational_Factors -> Supervisory_Violation;
+Situational_Factors -> Error;
+Personnel_Factors -> Condition_of_Operators;
+Personnel_Factors -> Supervisory_Violation;
+Personnel_Factors -> Organizational_Process;
+Personnel_Factors -> Error;
+Condition_of_Operators -> Planned_Inappropriate_Operations;
+Inadequate_Supervision -> Condition_of_Operators;
+Supervisory_Violation -> Planned_Inappropriate_Operations;
+Supervisory_Violation -> Error;
+Organizational_Process -> Error;
+}

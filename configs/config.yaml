@@ -1,0 +1,206 @@
+﻿dataset:
+  eval_split: 0.3  # fraction of the 700 accidents used for evaluation (e.g. 0.2 → 140 rows, 35 per class)
+
+llm:
+  api_key: "" # set via OPENAI_API_KEY env var, do not commit a real key
+  input: balanced_700.csv  # 700-row easy dataset (175 per class, strongest signal from 2536)
+  prompt: classify_direct # yaml file name (without .yaml) in src/llm/prompts/ASRS/
+  default_prompt: classify_direct
+  model: gpt-4o-mini
+  mode: evaluate # sync, batch_submit, batch_retrieve, evaluate
+  eval_prompts:
+    - classify_direct
+    - ASRS_extract_and_classify
+  limit: null
+  batch_chunk_size: 75 # max requests per batch job (avoids 90k org enqueued-token limit)
+  compact: false
+  evaluate: true # print accuracy + confusion matrix after classification
+  retry_wait: 5 # seconds added to provider-suggested waits
+  max_retries: 12
+  workers: 4 # concurrent API requests (lower = fewer TPM rate-limit collisions)
+  narrative_column: 'Report 1_Narrative'
+  metadata_columns: []
+  classes:
+    - 'Error'
+    - 'Violation'
+    - 'Neither'
+    - 'Both'
+  json_models:
+    - gpt-4o
+    - gpt-4o-mini
+    - gpt-4o-2024-11-20
+  no_temperature_models:
+    - gpt-5
+  output_columns:
+    - Final_Answer
+    - Final_Class
+    - Final_HFACS_Code
+    - Codes_Selected
+    - Final_Justification
+    - Confidence
+
+paths:
+  ghfacs_data_dir: 'data/intermediate'
+  llm_output_dir: 'data/intermediate'
+  prompts_dir: 'src/llm/prompts/ASRS'
+  processed_data: 'data/processed/'
+  undersampled_csv: 'data/GHFACS/GAHFACS_Version3.xlsx'
+  raw_data_dir: 'data/raw'
+  processed_csv: 'data/processed/sampled_75_per_class.csv' #'data/intermediate/processed_output.csv'
+  new_features_csv: 'data/intermediate/sampled_75_per_class_new_features.csv'
+  processed_excel: 'data/intermediate/processed_output.xlsx'
+  svm_output_dir: 'data/processed/svm'
+  svm_classify_output_dir: 'data/processed/svm_classify'
+  rf_output_dir: 'data/processed/rf'
+  rf_classify_source: 'data/intermediate/processed_output.csv'
+  rf_classify_input: 'data/intermediate/balanced_700_preconditions.csv'
+  balanced_processed_output: 'data/intermediate/balanced_processed_output.csv'
+  rf_new_features_output_dir: 'data/processed/rf_new_features'
+  ghfacs_svm_output_dir: 'data/processed/ghfacs_svm'
+  dag_output_dir: 'data/processed'
+  eda_output_dir: 'data/intermediate'
+  preconditions_csv: 'data/intermediate/balanced_700_preconditions.csv'
+  llm_category_csv: 'data/intermediate/balanced_700_LLM_Output_classify_direct.csv'
+
+  llm_subfactor_features_csv: 'data/processed/rf/llm_predicted_subfactor_features_50_per_class.csv'
+  rf_lora_preconditions_csv: 'data/intermediate/balanced_700_preconditions_qwen3.csv'
+  rf_gpt_preconditions_csv: 'data/intermediate/balanced_700_preconditions.csv'
+
+source_columns:
+  Anomaly: 'Events_Anomaly'
+  HumanFactors: 'Person 1_Human Factors'
+  Contributing: 'Assessments_Contributing Factors / Situations'
+
+hfacs_categories:
+  Situational_Factors:
+    - Contributing_Weather
+    - Contributing_Environment - Non Weather Related
+    - Anomaly_ATC Issue All Types
+    - Anomaly_Aircraft Equipment Problem Critical
+    - Anomaly_Aircraft Equipment Problem Less Severe
+    - Anomaly_Ground Event / Encounter Weather / Turbulence
+    - Anomaly_Inflight Event / Encounter Weather / Turbulence
+    - Anomaly_Inflight Event / Encounter Wake Vortex Encounter
+    - Anomaly_Inflight Event / Encounter Bird / Animal
+    - Anomaly_Ground Event / Encounter FOD
+    - Anomaly_Ground Event / Encounter Vehicle
+    - Anomaly_Ground Event / Encounter Object
+    - Anomaly_Ground Event / Encounter Person / Animal / Bird
+    - Anomaly_Ground Event / Encounter Other / Unknown
+    - Anomaly_Inflight Event / Encounter Other / Unknown
+    - Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Electronic Device
+    - Anomaly_Flight Deck / Cabin / Aircraft Event Smoke / Fire / Fumes / Odor
+
+  Personnel_Factors:
+    - HumanFactors_Communication Breakdown
+    - HumanFactors_Troubleshooting
+    - HumanFactors_Human-Machine Interface
+
+  Condition_of_Operators:
+    - HumanFactors_Confusion
+    - HumanFactors_Distraction
+    - HumanFactors_Situational Awareness
+    - HumanFactors_Physiological - Other
+    - HumanFactors_Other / Unknown
+
+  Inadequate_Supervision:
+    - Contributing_Staffing
+    - Contributing_Manuals
+    - HumanFactors_Training / Qualification
+
+  Failed_to_Correct_Problem:
+    - Contributing_MEL
+
+  Planned_Inappropriate_Operations:
+    - HumanFactors_Time Pressure
+
+  Supervisory_Violation:
+    - Contributing_Company Policy
+
+  Organizational_Process:
+    - Contributing_Procedure
+    - Contributing_Software and Automation
+    - Contributing_Equipment / Tooling
+    - Contributing_ATC Equipment / Nav Facility / Buildings
+    - Contributing_Chart Or Publication
+    - Contributing_Logbook Entry
+    - Contributing_Incorrect / Not Installed / Unavailable Part
+    - Contributing_Aircraft
+    - Contributing_Airport
+    - Contributing_Airspace Structure
+
+
+  Error:
+    - 'Anomaly_Conflict Airborne Conflict'
+    - 'Anomaly_Conflict Ground Conflict'
+    - 'Anomaly_Conflict NMAC'
+    - 'Anomaly_Deviation - Altitude Excursion From Assigned Altitude'
+    - 'Anomaly_Deviation - Altitude Overshoot'
+    - 'Anomaly_Deviation - Altitude Undershoot'
+    - 'Anomaly_Deviation - Speed All Types'
+    - 'Anomaly_Deviation - Track / Heading All Types'
+    - 'Anomaly_Inflight Event / Encounter Loss Of Aircraft Control'
+    - 'Anomaly_Ground Event / Encounter Loss Of Aircraft Control'
+    - 'Anomaly_Inflight Event / Encounter VFR In IMC'
+    - 'Anomaly_Inflight Event / Encounter CFTT / CFIT'
+    - 'Anomaly_Inflight Event / Encounter Fly Away (UAS)'
+    - 'Anomaly_Inflight Event / Encounter Fuel Issue'
+    - 'Anomaly_Ground Event / Encounter Fuel Issue'
+    - 'Anomaly_Ground Event / Encounter Gear Up Landing'
+
+  Violation:
+    - 'Anomaly_Airspace Violation All Types'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Clearance'
+    - 'Anomaly_Deviation / Discrepancy - Procedural FAR'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Hazardous Material Violation'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Landing Without Clearance'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Maintenance'
+    - 'Anomaly_Deviation / Discrepancy - Procedural MEL / CDL'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Other / Unknown'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Published Material / Policy'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)'
+    - 'Anomaly_Deviation / Discrepancy - Procedural Weight And Balance'
+    - 'Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Misconduct'
+
+ghfacs:
+  precondition_cols: [PE100, PE200, PP100, PT100, PC100, PC200, PC300]
+
+ghfacs_dag:
+  nodes: [PE100, PE200, PP100, PT100, PC100, PC200, PC300, AE100, AE200]
+  sink_nodes: [AE100, AE200]
+  score_func: 'local_score_BDeu'
+  max_indegree: null
+
+svm:
+  tie_break: 'error'
+
+models:
+  random_state: 42
+  test_size: 0.2
+
+  svm:
+    C: 2.3
+    kernel: linear
+    gamma: scale
+    test_size: 0.15
+
+
+
+  rf:
+    use_llm_features: true  # true → llm_* cols (requires preconditions CSV); false → ground truth cols
+    train_per_class: 125    # samples per class for training
+    test_per_class: 50      # samples per class for testing
+    test_size: 0.2
+    n_iter: 50
+    n_estimators: [100, 200, 300, 500, 800, 1000]
+    max_depth: [null, 5, 10, 15, 20, 30, 50]
+    min_samples_split: [2, 5, 10, 15, 20]
+    min_samples_leaf: [1, 2, 4, 8]
+    max_features: [sqrt, log2, null]
+    cv_splits: 5
+
+  svm_classify:
+    test_size: 0.15
+    C: [0.1, 1, 10, 100]
+    gamma: [scale, auto]
+    cv_splits: 5

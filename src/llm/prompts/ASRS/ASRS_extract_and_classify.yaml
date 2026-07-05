@@ -1,0 +1,64 @@
+temperature: 0
+system_prompt: |
+  You are an expert HFACS aviation safety analyst.
+  Return only valid JSON. No commentary outside the JSON.
+user_prompt_template: |
+  Stage 1 - Contributing Factors (mark Present, quote Evidence or leave empty if No):
+  Situational_Factors - External conditions or anomalies that shaped the environment: weather (Contributing_Weather), non-weather environmental hazards (Contributing_Environment), ATC-related issues (Anomaly_ATC Issue All Types), aircraft equipment problems whether critical or less severe, and anomalous encounters on the ground or in flight including turbulence, wake vortex, wildlife or bird strike, FOD, vehicle, object, person, smoke/fire/fumes, or passenger electronic device events.
+  Personnel_Factors - Team and interface breakdowns: communication failure between crew or with ATC (HumanFactors_Communication Breakdown), inadequate troubleshooting by crew members (HumanFactors_Troubleshooting), or a human-machine interface mismatch (HumanFactors_Human-Machine Interface) that degraded task performance.
+  Condition_of_Operators - Individual state at the time of the event: confusion, distraction, or degraded situational awareness (HumanFactors_Confusion / Distraction / Situational Awareness), fatigue, excessive workload, or other physiological factors (HumanFactors_Fatigue / Workload / Physiological).
+  Inadequate_Supervision - Oversight shortfalls: understaffing (Contributing_Staffing), deficient manuals or documentation (Contributing_Manuals), or insufficient training and qualification for the specific task (HumanFactors_Training / Qualification).
+  Failed_to_Correct_Problem - A known defect was not remediated: the aircraft was dispatched or operated with an active MEL item (Contributing_MEL) that contributed to the event.
+  Planned_Inappropriate_Operations - Time pressure (HumanFactors_Time Pressure) drove a deliberate pre-planned departure from safe practice.
+  Supervisory_Violation - Deliberate deviation from company policy (Contributing_Company Policy) by crew or management.
+  Organizational_Process - Systemic failures: deficient procedures (Contributing_Procedure), software or automation issues, faulty equipment or tooling, ATC facility or navigation equipment problems (Contributing_ATC Equipment / Nav Facility / Buildings), chart or publication errors (Contributing_Chart Or Publication), logbook discrepancies (Contributing_Logbook Entry), incorrect or missing parts, or structural issues with the aircraft, airport, or airspace (Contributing_Aircraft / Airport / Airspace Structure).
+
+  Stage 2 - Classify Unsafe Act
+  Decide Q1 and Q2 independently from the narrative, then derive Final_Class.
+
+  Q1_Error = Yes when the narrative supports at least one Error event:
+  - conflict: airborne conflict, ground conflict, or NMAC;
+  - deviation: assigned-altitude excursion/overshoot/undershoot, speed deviation, or track/heading deviation;
+  - encounter: inflight or ground loss of aircraft control, VFR in IMC, CFTT/CFIT, UAS fly-away, inflight or ground fuel issue, or gear-up landing.
+
+  Q2_Violation = Yes when the narrative supports at least one Violation event:
+  - airspace violation;
+  - procedural deviation/discrepancy involving a clearance, FAR, hazardous material, landing without clearance, maintenance, MEL/CDL, other/unknown procedure, published material/policy, unauthorized UAS operation, or weight and balance;
+  - passenger misconduct.
+
+  Evidence rules:
+  - Match events, not intent. A Violation may be deliberate, inadvertent, mistaken, or discovered later.
+  - Procedural noncompliance may be explicit or clearly implied, but it still needs support in the narrative. Examples include an omitted checklist or inspection, incorrect maintenance, a missing or wrong part, a tool left in the aircraft, operation contrary to MEL/CDL, inaccurate weight-and-balance data, or entering controlled airspace without the required clearance/contact.
+  - Do not infer Violation from the mere fact that damage, malfunction, or maintenance activity occurred. A post-event inspection, later repair, or discussion of FARs/policy is not enough by itself.
+  - Error requires a listed event, not merely confusion, distraction, workload, equipment damage, a hard landing, a prop strike, a forced or precautionary landing, an equipment failure, or another bad outcome.
+  - Do not infer loss of control from every runway excursion, hard landing, collapsed gear, or contact with terrain/object. Mark Error only when the narrative actually describes a listed conflict, deviation, loss of control, fuel event, VFR-in-IMC, CFIT/CFTT, fly-away, or gear-up landing.
+  - Do not require Error and Violation to come from separate acts. One occurrence may support both lists, but only if each branch has its own evidence. Example: forgetting to lower the gear supports gear-up landing and an omitted required landing procedure.
+  - Gear-up landing alone does not automatically mean Violation; Q2_Violation becomes Yes only if the narrative also supports a missed required procedure or other noncompliance.
+  - If the crew followed checklists, complied with ATC, inspected normally, or responded correctly to a malfunction, default Q2_Violation to No unless the narrative states contrary evidence.
+  - External weather, ATC, equipment, wildlife, or ground-service events are Neither only when no listed Error event and no supported noncompliance are described.
+  - Do not invent a rule violation solely because an accident occurred.
+
+  Derive Final_Class exactly:
+  Yes/No = Error; No/Yes = Violation; No/No = Neither; Yes/Yes = Both.
+  Codes_Selected must agree with Final_Class: ["Error"], ["Violation"], [], or ["Error","Violation"].
+
+  Examples:
+  Narrative: "On rollout the pilot's foot slipped from the rudder/brake. The aircraft veered off the pavement and the nose gear collapsed."
+  {"Q1_Error":{"Final_Answer":"Yes","Short_Explanation":"The aircraft departed the pavement after directional control was lost."},"Q2_Violation":{"Final_Answer":"No","Short_Explanation":"No procedural or regulatory noncompliance is stated or clearly implied."},"Final_Class":"Error","Codes_Selected":["Error"],"Final_Justification":"Ground loss of aircraft control only.","Confidence":"High"}
+
+  Narrative: "During inspection, a required tie bolt was found missing from the main-wheel assembly."
+  {"Q1_Error":{"Final_Answer":"No","Short_Explanation":"No listed conflict, deviation, loss-of-control, fuel, CFIT, or gear-up event is described."},"Q2_Violation":{"Final_Answer":"Yes","Short_Explanation":"A required aircraft part was missing, supporting maintenance and published-procedure noncompliance."},"Final_Class":"Violation","Codes_Selected":["Violation"],"Final_Justification":"Maintenance noncompliance only.","Confidence":"High"}
+
+  Narrative: "In a busy pattern I became distracted, forgot to lower the landing gear, and landed gear-up."
+  {"Q1_Error":{"Final_Answer":"Yes","Short_Explanation":"A gear-up landing is a listed Error event."},"Q2_Violation":{"Final_Answer":"Yes","Short_Explanation":"The required landing-gear procedure was omitted."},"Final_Class":"Both","Codes_Selected":["Error","Violation"],"Final_Justification":"The same occurrence supports both dataset event families.","Confidence":"High"}
+
+  Narrative: "After takeoff an engine-driven pump failed. The crew completed the checklist, declared an emergency, and landed normally."
+  {"Q1_Error":{"Final_Answer":"No","Short_Explanation":"An equipment failure occurred without a listed Error event."},"Q2_Violation":{"Final_Answer":"No","Short_Explanation":"The crew followed the required procedure; no noncompliance is described."},"Final_Class":"Neither","Codes_Selected":[],"Final_Justification":"External equipment failure with a correct crew response.","Confidence":"High"}
+
+  Narrative: "The engine failed after takeoff. I landed straight ahead off the runway and the prop struck the ground."
+  {"Q1_Error":{"Final_Answer":"No","Short_Explanation":"An off-airport landing and prop strike after engine failure are not enough by themselves to show a listed Error event."},"Q2_Violation":{"Final_Answer":"No","Short_Explanation":"No procedural or regulatory noncompliance is stated or clearly implied."},"Final_Class":"Neither","Codes_Selected":[],"Final_Justification":"Failure outcome only; no supported Error or Violation event.","Confidence":"High"}
+
+  Return only valid JSON:
+  {"Situational_Factors":{"Present":"Yes/No","Evidence":""},"Personnel_Factors":{"Present":"Yes/No","Evidence":""},"Condition_of_Operators":{"Present":"Yes/No","Evidence":""},"Inadequate_Supervision":{"Present":"Yes/No","Evidence":""},"Failed_to_Correct_Problem":{"Present":"Yes/No","Evidence":""},"Planned_Inappropriate_Operations":{"Present":"Yes/No","Evidence":""},"Supervisory_Violation":{"Present":"Yes/No","Evidence":""},"Organizational_Process":{"Present":"Yes/No","Evidence":""},"Q1_Error":{"Final_Answer":"Yes/No","Short_Explanation":""},"Q2_Violation":{"Final_Answer":"Yes/No","Short_Explanation":""},"Final_Class":"Error/Violation/Neither/Both","Codes_Selected":[],"Final_Justification":"","Confidence":"Low/Medium/High"}
+  Narrative:
+  {narrative}

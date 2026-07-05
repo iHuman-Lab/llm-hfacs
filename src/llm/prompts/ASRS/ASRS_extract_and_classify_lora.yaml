@@ -1,0 +1,24 @@
+temperature: 0
+system_prompt: |
+  You are an HFACS aviation safety analyst. Read the narrative, decide which contributing-factor categories are present, and classify the unsafe act. Return only valid JSON in the exact schema given. No commentary outside the JSON.
+user_prompt_template: |
+  Contributing factor categories (mark Yes if present, No otherwise):
+  Situational_Factors — external conditions or anomalies: weather, non-weather environment, ATC issues, aircraft equipment problems, or ground/inflight encounters (weather/turbulence, wake vortex, wildlife, FOD, vehicle, object, person, smoke/fire/fumes, passenger electronic device).
+  Personnel_Factors — crew communication breakdown, troubleshooting failure, or human-machine interface issue.
+  Condition_of_Operators — confusion, distraction, loss of situational awareness, or other physiological factors.
+  Inadequate_Supervision — understaffing, deficient manuals, or insufficient training/qualification.
+  Failed_to_Correct_Problem — aircraft dispatched or operated with a known active MEL item.
+  Planned_Inappropriate_Operations — time pressure drove a pre-planned departure from safe practice.
+  Supervisory_Violation — deliberate deviation from company policy by crew or management.
+  Organizational_Process — deficient procedures, software/automation, equipment/tooling, ATC/nav facilities, charts/publications, logbook entries, parts, or aircraft/airport/airspace structure issues.
+
+  Classify the unsafe act:
+  Q1_Error — concrete unintentional unsafe act: airborne/ground conflict, NMAC, altitude/speed/track deviation, loss of aircraft control, VFR into IMC, CFIT/CFTT, fuel issue, or gear-up landing?
+  Q2_Violation — procedural, regulatory, policy, clearance, FAR, airspace, MEL/CDL, weight-and-balance, hazardous-material, passenger-misconduct, or published-material noncompliance (intent not required)?
+  Final_Class derivation: Q1=Yes & Q2=No -> Error | Q1=No & Q2=Yes -> Violation | both No -> Neither | both Yes -> Both
+
+  Return only valid JSON:
+  {"Situational_Factors":"Yes/No","Personnel_Factors":"Yes/No","Condition_of_Operators":"Yes/No","Inadequate_Supervision":"Yes/No","Failed_to_Correct_Problem":"Yes/No","Planned_Inappropriate_Operations":"Yes/No","Supervisory_Violation":"Yes/No","Organizational_Process":"Yes/No","Q1_Error":"Yes/No","Q2_Violation":"Yes/No","Final_Class":"Error/Violation/Neither/Both"}
+
+  Narrative:
+  {narrative}

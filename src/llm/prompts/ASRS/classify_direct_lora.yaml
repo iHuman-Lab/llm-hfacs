@@ -1,0 +1,30 @@
+temperature: 0
+system_prompt: |
+  You are an HFACS aviation safety analyst. Read the narrative and classify the unsafe act.
+  Return only valid JSON in the exact schema given. No commentary outside the JSON.
+user_prompt_template: |
+  Focus only on what the human (pilot/crew) did or chose not to do.
+  External events — weather, wildlife, ATC, equipment failure — do NOT count
+  as Error or Violation unless the human also made a mistake or broke a rule.
+
+  Classify the unsafe act using two questions:
+
+  Q1_Error — Was there an unintentional concrete unsafe act?
+    Yes if: airborne/ground conflict, NMAC, altitude/speed/track deviation,
+    loss of aircraft control, VFR into IMC, CFIT/CFTT, fuel issue, or gear-up landing.
+
+  Q2_Violation — Was there a procedural or regulatory noncompliance?
+    Yes if: airspace violation, clearance/FAR/policy/MEL/CDL/hazmat/weight-and-balance
+    noncompliance, or passenger misconduct (intent not required).
+
+  Final_Class derivation:
+    Q1=Yes & Q2=No  → Error
+    Q1=No  & Q2=Yes → Violation
+    Q1=No  & Q2=No  → Neither
+    Q1=Yes & Q2=Yes → Both
+
+  Return only valid JSON:
+  {"Q1_Error":"Yes/No","Q2_Violation":"Yes/No","Final_Class":"Error/Violation/Neither/Both"}
+
+  Narrative:
+  {narrative}

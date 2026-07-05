@@ -1,0 +1,177 @@
+llm:
+  style: cot           # or tot, zeroshot
+  limit: 5             # set to None for all rows, or an integer for testing
+
+paths:
+  llm_predictions_csv: './data/processed/llm_predictions.csv'
+  raw_data_dir: './data/raw'
+  processed_csv: './data/intermediate/processed_output.csv'
+  processed_excel: './data/intermediate/processed_output.xlsx'
+  all_conditional_probabilities_csv: './data/processed/all_conditional_probabilities.csv'
+  hfacs_full_chains_csv: './data/processed/HFACS_all_L4_to_L1_chains.csv'
+  hfacs_combined_matrix_csv: './data/processed/HFACS_L4_to_L1_combined.csv'
+  learned_dag_probability_matrix_csv: './data/processed/learned_dag_probability_matrix.csv'
+  svm_output_dir: './data/processed/svm'
+  svm2_output_dir: './data/processed/svm2'
+  decision_tree_output_dir: './data/processed/decision_tree'
+  random_forest_output_dir: './data/processed/random_forest'
+  xgboost_output_dir: './data/processed/xgboost'
+  bn_output_dir: './data/processed/bayesian'
+  dag_output_dir: './data/processed'
+
+source_columns:
+  Anomaly: 'Events_Anomaly'
+  HumanFactors: 'Person 1_Human Factors'
+  Contributing: 'Assessments_Contributing Factors / Situations'
+
+
+
+# ======================================================
+# Feature groups used as SVM input variables
+# ======================================================
+
+feature_columns:
+  - Situational_Factors
+  - Personnel_Factors
+  - Condition_of_Operators
+  - Inadequate_Supervision
+  - Failed_to_Correct_Problem
+  - Planned_Inappropriate_Operations
+  - Supervisory_Violation
+  - Organizational_Process
+
+
+# ======================================================
+# HFACS-style predictor groups
+# These are INPUT FEATURES, not outcome labels
+# ======================================================
+
+hfacs_categories:
+  Situational_Factors:
+    - Contributing_Weather
+    - Contributing_Environment - Non Weather Related
+    - Anomaly_ATC Issue All Types
+    - Anomaly_Aircraft Equipment Problem Critical
+    - Anomaly_Aircraft Equipment Problem Less Severe
+    - Anomaly_Ground Event / Encounter Weather / Turbulence
+    - Anomaly_Inflight Event / Encounter Weather / Turbulence
+    - Anomaly_Inflight Event / Encounter Wake Vortex Encounter
+    - Anomaly_Inflight Event / Encounter Bird / Animal
+    - Anomaly_Ground Event / Encounter FOD
+    - Anomaly_Ground Event / Encounter Vehicle
+    - Anomaly_Ground Event / Encounter Object
+    - Anomaly_Ground Event / Encounter Person / Animal / Bird
+    - Anomaly_Ground Event / Encounter Other / Unknown
+    - Anomaly_Inflight Event / Encounter Other / Unknown
+    - Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Electronic Device
+    - Anomaly_Flight Deck / Cabin / Aircraft Event Smoke / Fire / Fumes / Odor
+  
+  Personnel_Factors:
+    - HumanFactors_Communication Breakdown
+    - HumanFactors_Troubleshooting
+    - HumanFactors_Human-Machine Interface
+  
+  Condition_of_Operators:
+    - HumanFactors_Confusion
+    - HumanFactors_Distraction
+    - HumanFactors_Situational Awareness
+    - HumanFactors_Fatigue
+    - HumanFactors_Workload
+    - HumanFactors_Physiological - Other
+    - HumanFactors_Other / Unknown
+  
+  Inadequate_Supervision:
+    - Contributing_Staffing
+    - Contributing_Manuals
+    - HumanFactors_Training / Qualification
+  
+  Failed_to_Correct_Problem:
+    - Contributing_MEL
+  
+  Planned_Inappropriate_Operations:
+    - HumanFactors_Time Pressure
+  
+  Supervisory_Violation:
+    - Contributing_Company Policy
+  
+  Organizational_Process:
+    - Contributing_Procedure
+    - Contributing_Software and Automation
+    - Contributing_Equipment / Tooling
+    - Contributing_ATC Equipment / Nav Facility / Buildings
+    - Contributing_Chart Or Publication
+    - Contributing_Logbook Entry
+    - Contributing_Incorrect / Not Installed / Unavailable Part
+    - Contributing_Aircraft
+    - Contributing_Airport
+    - Contributing_Airspace Structure
+  
+  
+  # ======================================================
+  # Outcome-label rules
+  # These are used to create y labels:
+  # None, Error, Violation
+  # ======================================================
+  
+  Error:
+    'Anomaly_Conflict Airborne Conflict': 5
+    'Anomaly_Conflict Ground Conflict': 4
+    'Anomaly_Conflict NMAC': 5
+    'Anomaly_Deviation - Altitude Excursion From Assigned Altitude': 3
+    'Anomaly_Deviation - Altitude Overshoot': 2
+    'Anomaly_Deviation - Altitude Undershoot': 2
+    'Anomaly_Deviation - Speed All Types': 2
+    'Anomaly_Deviation - Track / Heading All Types': 2
+    'Anomaly_Inflight Event / Encounter Loss Of Aircraft Control': 5
+    'Anomaly_Ground Event / Encounter Loss Of Aircraft Control': 5
+    'Anomaly_Inflight Event / Encounter VFR In IMC': 5
+    'Anomaly_Inflight Event / Encounter CFTT / CFIT': 5
+    'Anomaly_Inflight Event / Encounter Fly Away (UAS)': 4
+    'Anomaly_Inflight Event / Encounter Fuel Issue': 4
+    'Anomaly_Ground Event / Encounter Fuel Issue': 3
+    'Anomaly_Ground Event / Encounter Gear Up Landing': 4
+  
+  Violation:
+    'Anomaly_Airspace Violation All Types': 5
+    'Anomaly_Deviation / Discrepancy - Procedural Clearance': 4
+    'Anomaly_Deviation / Discrepancy - Procedural FAR': 5
+    'Anomaly_Deviation / Discrepancy - Procedural Hazardous Material Violation': 5
+    'Anomaly_Deviation / Discrepancy - Procedural Landing Without Clearance': 5
+    'Anomaly_Deviation / Discrepancy - Procedural Maintenance': 4
+    'Anomaly_Deviation / Discrepancy - Procedural MEL / CDL': 4
+    'Anomaly_Deviation / Discrepancy - Procedural Other / Unknown': 2
+    'Anomaly_Deviation / Discrepancy - Procedural Published Material / Policy': 3
+    'Anomaly_Deviation / Discrepancy - Procedural Unauthorized Flight Operations (UAS)': 5
+    'Anomaly_Deviation / Discrepancy - Procedural Weight And Balance': 4
+    'Anomaly_Flight Deck / Cabin / Aircraft Event Passenger Misconduct': 2
+    
+
+dag:
+  sink_nodes: ['Error', 'Violation']
+  score_func: 'local_score_BDeu'
+  max_indegree: null
+
+svm:
+  dataset_key: 'processed_csv'
+  bn_prior_type: 'BDeu'
+  bin_threshold: 0.0
+  tie_break: 'error'
+  drop_equal_weight_ties: true
+
+  feature_columns:
+    - Situational_Factors
+    - Personnel_Factors
+    - Condition_of_Operators
+    - Inadequate_Supervision
+    - Failed_to_Correct_Problem
+    - Planned_Inappropriate_Operations
+    - Supervisory_Violation
+    - Organizational_Climate
+    - Resource_Management/Organizational_Process
+
+  # BN output nodes
+  class_nodes:
+    - Neither
+    - Error
+    - Violation
+

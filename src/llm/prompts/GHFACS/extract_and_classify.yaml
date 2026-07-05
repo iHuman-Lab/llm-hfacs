@@ -1,0 +1,38 @@
+temperature: 0
+
+system_prompt: |
+  You are an expert HFACS aviation safety analyst.
+  Stage 1: extract preconditions. Stage 2: classify unsafe act using those preconditions.
+  Mark Yes ONLY when the narrative explicitly states evidence — not implies it.
+  Return only valid JSON. No commentary outside the JSON.
+
+user_prompt_template: |
+  Stage 1 — Preconditions (mark Present, quote Evidence or leave empty):
+  PE100 — Physical Environment: adverse weather, terrain, lighting, runway surface, wildlife, FOD.
+  PE200 — Tools / Technology: failed, malfunctioning, or misleading equipment or automation.
+  PP100 — Communication / Coordination / Planning: CRM failure, miscommunication, planning error.
+  PP200 — Fitness for Duty: pre-flight impairment — substance use, violated rest, known illness.
+  PC100 — Mental States: loss of SA, channelized attention, distraction, complacency, overconfidence.
+  PC200 — Physiological States: fatigue, hypoxia, disorientation, visual illusion — during flight.
+  PC300 — Physical / Mental Limitations: insufficient training or experience for the specific task.
+  Boundaries: PE200 only if equipment failed/gave wrong info. PP200=pre-flight; PC200=during flight. PC100=transient state; PC300=inherent gap.
+
+  Stage 2 — Unsafe Act (use preconditions as grounding):
+  AE100 — Execution failure: knew what to do but failed (slip, lapse, control error, checklist).
+  AE200 — Decision error: plan or choice was unsafe before execution failed (wrong site/conditions).
+  Both — only when a wrong decision AND a distinct execution failure are each independently supported.
+  Neither — external cause; no pilot error explicitly described.
+  Gates: Counterfactual — would AE100 have occurred without AE200? If No → AE200 only. AE200 gate — was decision independently unsafe? If No → AE100 only.
+  Derivation: AE100=Y+AE200=N→"AE100 only" | AE100=N+AE200=Y→"AE200 only" | both Y→"Both" | both N→"Neither"
+
+  Ex1 AE100 only — "Lost directional control during rollout. No mechanical failures."
+  {"PE100":{"Present":"No","Evidence":""},"PE200":{"Present":"No","Evidence":""},"PP100":{"Present":"No","Evidence":""},"PP200":{"Present":"No","Evidence":""},"PC100":{"Present":"No","Evidence":""},"PC200":{"Present":"No","Evidence":""},"PC300":{"Present":"No","Evidence":""},"Q2_AE100":{"Final_Answer":"Yes","Short_Explanation":"Lost directional control — execution failure."},"Q3_AE200":{"Final_Answer":"No","Short_Explanation":"No wrong plan described."},"Final_Class":"AE100 only","Codes_Selected":["AE100"],"Final_Justification":"Execution failure only.","Confidence":"High"}
+
+  Ex2 AE200 only — "Continued VFR into deteriorating visibility. Struck terrain."
+  {"PE100":{"Present":"Yes","Evidence":"deteriorating visibility"},"PE200":{"Present":"No","Evidence":""},"PP100":{"Present":"No","Evidence":""},"PP200":{"Present":"No","Evidence":""},"PC100":{"Present":"Yes","Evidence":"continued despite conditions — get-there-itis"},"PC200":{"Present":"No","Evidence":""},"PC300":{"Present":"No","Evidence":""},"Q2_AE100":{"Final_Answer":"No","Short_Explanation":"Terrain impact is a consequence, not a separate slip."},"Q3_AE200":{"Final_Answer":"Yes","Short_Explanation":"Chose to continue VFR into deteriorating visibility."},"Final_Class":"AE200 only","Codes_Selected":["AE200"],"Final_Justification":"Wrong decision; terrain impact is its consequence.","Confidence":"High"}
+
+  Return only valid JSON:
+  {"PE100":{"Present":"Yes/No","Evidence":""},"PE200":{"Present":"Yes/No","Evidence":""},"PP100":{"Present":"Yes/No","Evidence":""},"PP200":{"Present":"Yes/No","Evidence":""},"PC100":{"Present":"Yes/No","Evidence":""},"PC200":{"Present":"Yes/No","Evidence":""},"PC300":{"Present":"Yes/No","Evidence":""},"Q2_AE100":{"Final_Answer":"Yes/No","Short_Explanation":""},"Q3_AE200":{"Final_Answer":"Yes/No","Short_Explanation":""},"Final_Class":"AE100 only/AE200 only/Both/Neither","Codes_Selected":[],"Final_Justification":"","Confidence":"Low/Medium/High"}
+
+  Narrative:
+  {narrative}

@@ -1,0 +1,43 @@
+lora_qwen3:
+  # ── Switch task here ────────────────────────────────────────────────────────
+  # Options: "classify_direct" | "extract_classify" | "extract_preconditions"
+  task: "extract_preconditions"
+  prompt_yaml: "src/llm/prompts/ASRS/extract_preconditions_lora.yaml"
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  base_model: "Qwen/Qwen3-14B"
+  labeled_data: "data/intermediate/balanced_700.csv"
+  narrative_column: "Report 1_Narrative"
+  class_column: "category"
+
+  train_per_class: 125             # 125 × 4 classes = 500 training samples
+  test_per_class: 50               # 50  × 4 classes = 200 test samples
+  output_dir: "data/processed/lora_extract_preconditions_qwen3"
+  preconditions_output_csv: "data/intermediate/balanced_700_preconditions_qwen3.csv"
+
+  hf_dataset_id: ""                # set to "username/dataset-name" to push to HF Hub
+  hf_token: ""                     # set via Colab secret, do not commit a real token
+
+  lora:
+    r: 16
+    alpha: 16
+    dropout: 0.1
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+
+  training:
+    epochs: 3
+    batch_size: 2
+    grad_accum: 4
+    learning_rate: 0.0002
+    max_seq_len: 1024
+
+  checkpoint_dir: "/content/checkpoints"
+  adapter_save_path: "./models/hfacs_qwen3_adapter"
+  inference_output: "./data/outputs/qwen3_results.csv"
