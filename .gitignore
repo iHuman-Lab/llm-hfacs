@@ -117,3 +117,12 @@ data/*
 # Config
 configs/config.yaml
 
+
+# LoRA training artifacts
+outputs/
+checkpoints/
+runs/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
