@@ -1,7 +1,5 @@
 import argparse
 import csv
-import os
-import re
 from pathlib import Path
 
 import torch
@@ -15,28 +13,26 @@ from transformers import (
     TrainingArguments,
 )
 
+# Base model: to be selected based on future experiments.
+DEFAULT_MODEL = None
 
-DEFAULT_MODEL = os.environ.get("HFACS_MODEL_PATH", "Qwen/Qwen3-0.6B")
-DEFAULT_DATA = Path("data/processed/hfacs_train.csv")
+# Expert-labeled HFACS training data: to be provided by the advisor.
+DEFAULT_DATA = None
 DEFAULT_PROMPTS = Path("prompts/io.yaml")
 DEFAULT_OUTPUT = Path("outputs/hfacs_lora")
 DEFAULT_MAX_LENGTH = 2048  
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train a LoRA adapter for HFACS YES/NO classification")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help="HF model ID or local model directory / 模型名称或路径")
-    parser.add_argument("--train-data", type=Path, default=DEFAULT_DATA, help="Expert-labeled CSV / 专家标注数据")
-    parser.add_argument("--prompt-file", type=Path, default=DEFAULT_PROMPTS, help="HFACS IO YAML / 提示词文件")
-    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT, help="Adapter/checkpoint output / 输出目录")
-    parser.add_argument("--max-length", type=int, default=DEFAULT_MAX_LENGTH, help="Max tokens per sample / 每条样本最大 token 数")
-    parser.add_argument("--predict-data", type=Path, default=None, help="Optional CSV of reports to classify after training; columns: report, optional report_id")
-    parser.add_argument("--predictions-output", type=Path, default=Path("outputs/hfacs_lora/predictions.csv"), help="CSV containing one YES/NO column per HFACS factor")
-    parser.add_argument("--check-prompts", action="store_true", help="Check YAML only; no model/GPU/data needed / 只检查 Prompt")
-    parser.add_argument("--check-data", action="store_true", help="Check YAML and CSV only; no model/GPU needed / 只检查数据")
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--model", required=True)
+    parser.add_argument("--train-data", type=Path, required=True)
+
     return parser.parse_args()
 
-
+# Currently using the simplest Input-Output (IO) prompting strategy.
+# The prompting strategy may be adjusted based on future experiments.
 def load_prompt_templates(path):
     with path.open("r", encoding="utf-8") as f:
         templates = yaml.safe_load(f)
@@ -48,7 +44,8 @@ def load_prompt_templates(path):
     return templates
 
 
-
+# Temporary CSV format: report, factor, label.
+# Will be adapted once the actual HFACS training data is available.
 def load_training_rows(path, templates):
     if not path.is_file():
         raise FileNotFoundError(
@@ -73,15 +70,13 @@ def load_training_rows(path, templates):
             raise ValueError(f"Expected yes/no on CSV line {line}: {row['label']!r}")
     return rows
 
-
+# Use an end-of-response token so the model learns to stop after YES or NO.
 def answer_end_token_id(tokenizer):
-    """Qwen chat uses <|im_end|>; fall back to the tokenizer EOS for other models.
-
-    Qwen 聊天回复优先使用 <|im_end|>，其他模型退回 EOS。
-    """
+  # Currently designed for Qwen chat models using <|im_end|> to end a response.
     vocab = tokenizer.get_vocab()
     if "<|im_end|>" in vocab:
         return vocab["<|im_end|>"]
+
     if tokenizer.eos_token_id is None:
         raise ValueError("Tokenizer has neither <|im_end|> nor eos_token_id")
     return tokenizer.eos_token_id
@@ -138,131 +133,73 @@ class HFACSDataset(torch.utils.data.Dataset):
 
 
 
-def load_prediction_reports(path):
-    """Provisional prediction CSV: report required, report_id optional.
-
-    预测数据格式暂定；它与带有专家标签的训练数据分开。
-    """
-    if not path.is_file():
-        raise FileNotFoundError(f"Missing prediction CSV: {path}")
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        if not reader.fieldnames or "report" not in reader.fieldnames:
-            raise ValueError("Prediction CSV requires a 'report' column")
-        reports = []
-        for index, row in enumerate(reader, start=1):
-            report = (row.get("report") or "").strip()
-            if not report:
-                raise ValueError(f"Empty prediction report on data row {index}")
-            reports.append({
-                "report_id": (row.get("report_id") or "").strip() or f"Report_{index:03d}",
-                "report": report,
-            })
-    if not reports:
-        raise ValueError("Prediction CSV is empty")
-    return reports
-
-
-def save_predictions(model, tokenizer, templates, reports, output_path, max_length):
-    """One row per report; one YES/NO column per active IO factor.
-
-    仅保存模型预测，不计算评价指标；标签不来自训练数据。
-    """
-    model.eval()
-    device = next(model.parameters()).device
-    factors = list(templates)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with output_path.open("w", encoding="utf-8-sig", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["report_id", *factors])
-        writer.writeheader()
-        for index, item in enumerate(reports, start=1):
-            result = {"report_id": item["report_id"]}
-            for factor in factors:
-                prompt_text = templates[factor].replace("{context}", item["report"])
-                chat_kwargs = {"enable_thinking": False} if "enable_thinking" in str(tokenizer.chat_template) else {}
-                prompt = tokenizer.apply_chat_template(
-                    [{"role": "user", "content": prompt_text}],
-                    tokenize=False, add_generation_prompt=True, **chat_kwargs,
-                )
-                inputs = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
-                if inputs["input_ids"].shape[1] + 5 > max_length:
-                    raise ValueError(
-                        f"Prediction report {index}, factor {factor}: prompt exceeds max_length={max_length}. "
-                        "Long-report handling has not been implemented."
-                    )
-                inputs = {key: value.to(device) for key, value in inputs.items()}
-                with torch.inference_mode():
-                    generated = model.generate(
-                        **inputs,
-                        max_new_tokens=5,
-                        do_sample=False,
-                        pad_token_id=tokenizer.pad_token_id,
-                        eos_token_id=answer_end_token_id(tokenizer),
-                        use_cache=True,
-                    )
-                answer_ids = generated[0, inputs["input_ids"].shape[1]:]
-                answer = tokenizer.decode(answer_ids, skip_special_tokens=True).strip().upper()
-                # Do not silently turn invalid outputs into NO.
-                if not re.fullmatch(r"(?:YES|NO)[.!]?", answer):
-                    raise ValueError(
-                        f"Invalid prediction for report {item['report_id']}, factor {factor}: {answer!r}. "
-                        "Expected YES or NO."
-                    )
-                result[factor] = answer.rstrip(".!")
-            writer.writerow(result)
-            print(f"Predicted report {index}/{len(reports)}: {item['report_id']}", flush=True)
-    print(f"HFACS YES/NO predictions saved to: {output_path}", flush=True)
 
 
 def main():
     config = parse_args()
-    templates = load_prompt_templates(config.prompt_file)
-    print(f"Loaded {len(templates)} active HFACS IO prompts.", flush=True)
-    if config.check_prompts:
-        print("Prompt check passed / Prompt 检查通过")
-        return
 
+    # Load the current HFACS IO prompts.
+    templates = load_prompt_templates(DEFAULT_PROMPTS)
+    print(f"Loaded {len(templates)} active HFACS IO prompts.")
+
+    # Load expert-labeled training data.
     rows = load_training_rows(config.train_data, templates)
-    print(f"Loaded {len(rows)} labeled training rows.", flush=True)
-    if config.check_data:
-        print("Data check passed / 数据检查通过 (training not started)")
-        return
+    print(f"Loaded {len(rows)} labeled training rows.")
 
+    # Check GPU availability.
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA GPU not available. Training requires a configured GPU.")
-    print(f"Training GPU: {torch.cuda.get_device_name(0)}", flush=True)
-    print(f"Base model: {config.model}", flush=True)
 
+    print(f"Training GPU: {torch.cuda.get_device_name(0)}")
+    print(f"Base model: {config.model}")
+
+    # Load tokenizer.
     tokenizer = AutoTokenizer.from_pretrained(config.model)
+
     if tokenizer.pad_token_id is None:
         if tokenizer.eos_token_id is None:
             raise ValueError("Tokenizer lacks pad_token and eos_token")
         tokenizer.pad_token = tokenizer.eos_token
 
-    dataset = HFACSDataset(rows, tokenizer, templates, max_length=config.max_length)
-    print(f"Prepared {len(dataset)} tokenized samples.", flush=True)
+    # Prepare training dataset.
+    dataset = HFACSDataset(
+        rows,
+        tokenizer,
+        templates,
+        max_length=DEFAULT_MAX_LENGTH,
+    )
+    print(f"Prepared {len(dataset)} tokenized samples.")
 
-    model = AutoModelForCausalLM.from_pretrained(config.model, torch_dtype=torch.float16)
+    # Load the base model.
+    model = AutoModelForCausalLM.from_pretrained(
+        config.model,
+        torch_dtype=torch.float16,
+    )
+
     model.config.use_cache = False
-    model = get_peft_model(model, LoraConfig(
+
+    # Configure LoRA.
+    lora_config = LoraConfig(
         r=8,
         lora_alpha=16,
         lora_dropout=0.05,
         bias="none",
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-    ))
+    )
+
+    model = get_peft_model(model, lora_config)
     model.enable_input_require_grads()
     model.print_trainable_parameters()
 
+    # Training configuration.
     args = TrainingArguments(
-        output_dir=str(config.output_dir),
+        output_dir=str(DEFAULT_OUTPUT),
         num_train_epochs=2,
         per_device_train_batch_size=1,
         gradient_accumulation_steps=16,
         learning_rate=1e-4,
-        warmup_ratio=0.05,  
+        warmup_ratio=0.05,
         lr_scheduler_type="cosine",
         weight_decay=0.01,
         fp16=True,
@@ -271,10 +208,11 @@ def main():
         save_total_limit=2,
         report_to="none",
         dataloader_num_workers=0,
-        gradient_checkpointing=True,  
+        gradient_checkpointing=True,
         optim="adamw_torch",
         seed=42,
     )
+
     trainer = Trainer(
         model=model,
         args=args,
@@ -285,19 +223,18 @@ def main():
             label_pad_token_id=-100,
         ),
     )
+
+    # Train the LoRA adapter.
     trainer.train()
 
-    final_path = config.output_dir / "final_adapter"
+    # Save the trained LoRA adapter for later evaluation.
+    final_path = DEFAULT_OUTPUT / "final_adapter"
     final_path.mkdir(parents=True, exist_ok=True)
+
     model.save_pretrained(final_path)
     tokenizer.save_pretrained(final_path)
-    print(f"LoRA adapter saved to: {final_path}", flush=True)
-    print("Training finished. No validation metrics were computed / 尚未计算验证指标", flush=True)
 
-
-    if config.predict_data is not None:
-        reports = load_prediction_reports(config.predict_data)
-        save_predictions(model, tokenizer, templates, reports, config.predictions_output, config.max_length)
+    print(f"LoRA adapter saved to: {final_path}")
 
 
 if __name__ == "__main__":
